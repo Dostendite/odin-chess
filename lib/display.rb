@@ -32,7 +32,7 @@ module Display
 
   def display_board(board)
     clear_screen
-    board.each_with_index do |row, index|
+    board.reverse.each_with_index do |row, index|
       row.each do |square|
         if square.coordinate.include?("a")
           print Rainbow("#{square.coordinate[1]} ").bright
@@ -84,8 +84,7 @@ module Display
   end
 
   def display_promote_prompt
-        puts "Please input 'white' or 'black'..."
-        puts "Input piece to promote your pawn to..."
+    puts "Input piece to promote your pawn to..."
     puts
   end
 

@@ -1,15 +1,16 @@
-require_relative "pieces/piece.rb"
-require_relative "pieces/pawn.rb"
-require_relative "pieces/king.rb"
-require_relative "pieces/queen.rb"
-require_relative "pieces/bishop.rb"
-require_relative "pieces/knight.rb"
-
 require_relative "board"
 require_relative "chess"
 require_relative "display"
 require_relative "serializer"
 require_relative "square"
+
+require_relative "pieces/piece.rb"
+require_relative "pieces/pawn.rb"
+require_relative "pieces/knight.rb"
+require_relative "pieces/bishop.rb"
+require_relative "pieces/rook.rb"
+require_relative "pieces/queen.rb"
+require_relative "pieces/king.rb"
 
 # chess game class
 # -- job is to take care of the game logic,
@@ -20,7 +21,6 @@ class Chess
 
   def initialize
     @board = Board.new
-    @current_turn = "white"
     @game_over = false
   end
 
@@ -35,19 +35,21 @@ class Chess
   end
 
   def play_game
+    board.setup_pieces
+    print_board
+    display_continue_prompt
   end
 
   # -------- GAME --------
-  # 1. Ask the player what color they want to play
-  # 2. Set up the board & the pieces
-  # 3. Prompt for a move
-  # 4. Move the desired piece
-  # 5. Repeat
-  # 6. When the king receives a check, check for checkmate
+  # 1. Set up the board & the pieces
+  # 2. Prompt for a move
+  # 3. Move the desired piece
+  # 4. Repeat
+  # 5. When the king receives a check, check for checkmate
   # if the king is checkmated: the game is over
   #    -> else: let the player make only moves that stop the
   #             king from getting checkmated
-  # 7. Once the game is over, thank the player for            
+  # 6. Once the game is over, thank the player for            
   # trying out the game and send them to the main menu
   # display_final_message
 
@@ -72,7 +74,9 @@ class Chess
     save_amount = Serializer.get_save_amount
     loop do
       play_choice = gets.strip
-      if play_choice[0].downcase == "p"
+      if play_choice.nil? || play_choice == ""
+        return "play"
+      elsif play_choice[0].downcase == "p"
         return "play"
       else
         play_choice = play_choice.to_i

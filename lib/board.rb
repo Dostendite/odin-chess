@@ -1,25 +1,36 @@
 require_relative "square"
 require_relative "serializer"
 
+require_relative "pieces/piece.rb"
+require_relative "pieces/pawn.rb"
+require_relative "pieces/knight.rb"
+require_relative "pieces/bishop.rb"
+require_relative "pieces/rook.rb"
+require_relative "pieces/queen.rb"
+require_relative "pieces/king.rb"
+
+# lowercase letters for calculating ranks
+ORD_BASE = 97
+
 # board class
 # -- job is to store the game squares
 # -- and pieces within and offer functionality
 # -- to the chess class
 class Board
   include Serializer
-  attr_reader :board
+  attr_reader :board, :current_turn
 
   def initialize
     @board = generate_board
+    @current_turn = "White"
   end
 
   def translate_coordinates(position)
     # "d4" -> [3][3]
-    ord_base = 97
     pair_output = []
   
     row = (position[1].to_i) - 1
-    column = (position[0].ord) - ord_base
+    column = (position[0].ord) - ORD_BASE
   
     pair_output << row
     pair_output << column
@@ -27,25 +38,24 @@ class Board
   
   def translate_coordinates_reverse(row, column)
     # [1][7] -> "h2"
-    ord_base = 97
     algebraic_output = ""
   
     number = (row + 1).to_s
-    letter = (column + ord_base).chr
+    letter = (column + ORD_BASE).chr
   
     algebraic_output << letter
     algebraic_output << number
   end
 
   def generate_board(board = [])
-    current_color = "black"
+    current_color = "Black"
     (1..8).each do |number|
       sub_array = []
       ("a".."h").each do |letter|
         coordinate = "#{letter}#{number.to_s}"
         sub_array << Square.new(current_color, coordinate)
         unless letter == "h"
-          current_color = current_color == "white" ? "black" : "white"
+          current_color = current_color == "White" ? "Black" : "White"
         end
       end
       board << sub_array
@@ -54,9 +64,9 @@ class Board
   end
 
   def move_piece(piece, target_position)
-    target_row, target_column = translate_coordinates(target_position)
+    target_position = translate_coordinates(target_position)
     remove_piece(piece.position)
-    add_piece(target_row, target_column, piece)
+    add_piece(target_position, piece)
   end
 
   def create_piece(type, color, position)
@@ -76,32 +86,77 @@ class Board
     end
   end
 
-  def setup_pieces(piece_set)
-  
+  def find_color_file(color)
+    if color == "Black"
+      7
+    else
+      0
+    end
   end
 
-  def generate_piece_set
-    piece_set = []
-    
-    8.times do
-      pawn = create_piece("Pawn", "Black")
+  def setup_pawns(color)
+    if color == "Black"
+      file = 6
+    else
+      file = 1
     end
-    # Black player
-    # Eight pawns -> a8 to h8
-    # Two rooks -> a8 & h8
-    # Two knights -> b8 & g8
-    # Two bishops -> c8 & f8
-    # Queen -> d8
-    # King -> e8
+    8.times do |rank|
+      pawn = create_piece("Pawn", color, [file, rank])
+      add_piece(pawn.position, pawn)
+    end
+  end
 
-    # Eight pawns -> a2 to h2
-    # White player
-    # Two rooks -> a1 & h1
-    # Two knights -> b1 & g1
-    # Two bishops -> c1 & f1
-    # Queen -> d1
-    # King -> e1
-    # piece_set
+  def setup_rooks(color)
+    file = find_color_file(color)
+
+    rook_left = create_piece("Rook", color, [file, 0])
+    rook_right = create_piece("Rook", color, [file, 7])
+  
+    add_piece(rook_left.position, rook_left)
+    add_piece(rook_right.position, rook_right)
+  end
+
+  def setup_knights(color)
+    file = find_color_file(color)
+
+    knight_left = create_piece("Knight", color, [file, 1])
+    knight_right = create_piece("Knight", color, [file, 6])
+
+    add_piece(knight_left.position, knight_left)
+    add_piece(knight_right.position, knight_right)
+  end
+
+  def setup_bishops(color)
+    file = find_color_file(color)
+    
+    bishop_left = create_piece("Bishop", color, [file, 2])
+    bishop_right = create_piece("Bishop", color, [file, 5])
+
+    add_piece(bishop_left.position, bishop_left)
+    add_piece(bishop_right.position, bishop_right)
+  end
+
+  def setup_royalty(color)
+    file = find_color_file(color)
+
+    queen = create_piece("Queen", color, [file, 3])
+    king = create_piece("King", color, [file, 4])
+    
+    add_piece(queen.position, queen)
+    add_piece(king.position, king)
+  end
+
+  def setup_pieces
+    setup_pawns("White")
+    setup_pawns("Black")
+    setup_rooks("White")
+    setup_rooks("Black")
+    setup_knights("White")
+    setup_knights("Black")
+    setup_bishops("White")
+    setup_bishops("Black")
+    setup_royalty("White")
+    setup_royalty("Black")
   end
 
   def clear_squares(target_position)
@@ -147,12 +202,14 @@ class Board
     end
   end
 
-  def add_piece(row, column, piece)
+  def add_piece(position, piece)
+    row, column = position
     target_square = @board[row][column]
     target_square.piece = piece
   end
 
-  def remove_piece(row, column)
+  def remove_piece(position)
+    row, column = position
     target_square = @board[row][column]
     target_square.piece = nil
   end

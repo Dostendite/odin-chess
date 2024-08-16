@@ -5,11 +5,15 @@ require "rainbow"
 # -- blocks and store the pieces within
 class Square
   attr_reader :coordinate, :color
+  attr_accessor :piece
 
+  # the coordinate is represented with
+  # algebraic notation, e.g.: c4 -> (5, 2)
   def initialize(color, coordinate)
     @color = color
     @coordinate = coordinate
     @piece = nil
+    @symbol = nil
   end
 
   def empty?
@@ -17,14 +21,14 @@ class Square
   end
 
   def black?
-    @color == "black"
+    @color == "Black"
   end
   
   def to_s
     if empty?
       "  "
     else
-      "#{@piece} "
+      "#{@piece.symbol}#{@piece.color[0].downcase}" 
     end
   end
 
@@ -34,6 +38,5 @@ class Square
     else
       print Rainbow(to_s).bg("#ffffff")
     end
-    # puts if @coordinate.include?("h") && !@coordinate.include?("1")
   end
 end
