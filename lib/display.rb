@@ -11,10 +11,11 @@ module Display
     This is the capstone project for 
     The Odin Project's Ruby course.
     HEREDOC
+
     print_skyblue(introduction)
     print_skyblue("You can find me on GitHub as ")
     puts Rainbow("dostendite!").royalblue.bright
-    prompt_continue
+    display_continue_prompt
   end
 
   def display_main_menu  
@@ -53,26 +54,9 @@ module Display
     puts
   end
 
-  def display_promote_choice
-    puts "Input piece to promote your pawn to..."
-    puts
-  end
-
   def display_en_passant
     print "Duh, of course I coded in "
     print Rainbow("en passant").italic + " ;)"
-    puts
-  end
-
-  def display_color_prompt
-    puts "Please choose the color of the starting player"
-    puts "('Black' or 'White')"
-    puts
-  end
-
-  def display_move_prompt
-    puts "Input your move coordinate...\n"
-    puts "E.g.: " + Rainbow("Nf3 -> Knight to f3").gray.italic
     puts
   end
 
@@ -96,10 +80,22 @@ module Display
       You will now be returned to the main menu.
     HEREDOC
     print_skyblue(final_message)
-    prompt_continue
+    display_continue_prompt
   end
 
-  def prompt_continue
+  def display_promote_prompt
+        puts "Please input 'white' or 'black'..."
+        puts "Input piece to promote your pawn to..."
+    puts
+  end
+
+  def display_move_prompt
+    puts "Input your move coordinate...\n"
+    puts "E.g.: " + Rainbow("Nf3 -> Knight to f3").gray.italic
+    puts
+  end
+
+  def display_continue_prompt
     puts
     print Rainbow("Press any button to continue... ").italic
     gets
