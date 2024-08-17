@@ -9,3 +9,5 @@ gem "rspec", "~> 3.13"
 gem "rainbow", "~> 3.1"
 
 gem "lolize", "~> 0.0.3"
+
+gem "pry-byebug", "~> 3.10"
