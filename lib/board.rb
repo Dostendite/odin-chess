@@ -18,11 +18,19 @@ ORD_BASE = 97
 # -- to the chess class
 class Board
   include Serializer
-  attr_reader :board, :current_turn
+  attr_accessor :board, :current_turn, :save_number
 
-  def initialize
-    @board = generate_board
+  def initialize(board = nil)
+    @board = board
     @current_turn = "White"
+    @new_game = true
+    @save_number = nil
+  end
+
+  def load_board(save_number)
+    @board = load_save(save_number)
+    @save_number = Serializer.get_save_amount
+    @new_game = false
   end
 
   def translate_coordinates(position)
@@ -45,6 +53,10 @@ class Board
   
     algebraic_output << letter
     algebraic_output << number
+  end
+
+  def create_new_board
+    @board = generate_board
   end
 
   def generate_board(board = [])
@@ -219,9 +231,17 @@ class Board
     @board.add_piece(pawn.position, queen)
   end
 
-  def reset_board; end
-  def save_board; end
-  def load_board; end
+  def save_board
+    if @new_game
+      puts "New game, creating save..."
+      create_save(@board)
+      @save_number = Serializer.get_save_amount
+      puts "Done! Created save #{save_number}."
+      @new_game = false
+    else
+      update_save(@board, @save_number)
+    end
+  end
 end
 
 

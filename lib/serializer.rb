@@ -1,5 +1,5 @@
-# maybe use msgpack?
-# https://www.sitepoint.com/choosing-right-serialization-format/
+SAVE_NAME = "chess_save_"
+SAVE_DIRECTORY = "./saves/"
 
 # serializer module
 # -- job is to serialize the game state & position of the pieces
@@ -8,34 +8,61 @@ module Serializer
   @@save_capacity = 8
   @@save_amount = 0
 
+  def self.update_save_amount
+    count = Dir[File.join(SAVE_DIRECTORY, "**", "*")].count { |f| File.file?(f) }
+    @@save_amount = count
+  end
+
   def self.get_save_amount
     @@save_amount
   end
 
-  def self.update_save_amount(amount)
-    @@save_amount += amount
+  def create_save(unserialized_board)
+    serialized_board = serialize_board(unserialized_board)
+    @@save_amount += 1
+    File.write(get_new_save_path(serialized_board), serialized_board)
   end
 
-  def create_save
-    serialized_board = serialize_board
-    # check for last save & store
-    # with 1 index higher
-    # e.g.: "chess_save_7"
-    update_save_amount(+1)
+  def load_save(save_number)
+    serialized_board = File.read(get_existing_save_path(save_number).to_s)
+    deserialize_board(serialized_board)
   end
 
-  def load_save(number)
-    deserialized_board = deserialize_board
-    # e.g.: number = 7
-    # loads "chess_save_7"
+  def update_save(unserialized_board, save_number)
+    File.truncate(get_existing_save_path(save_number))
+    serialized_board = serialize_board(unserialized_board)
+    File.write(get_existing_save_path(serialized_board), serialized_board)
   end
 
-  def delete_save
-    update_save_amount(-1)
+  def delete_save(save_number)
+    File.delete(get_existing_save_path(save_number))
   end
 
-  def serialize_board(board); end
-  def deserialize_board(); end
+  # File.open(SAVE_DIRECTORY + SAVE_NAME + "#{@@save_amount}", "w") do |new_save|
+  #   new_save.write(serialized_board)
+  #   new_save.close
+  # end
+
+  # File.open(SAVE_DIRECTORY + SAVE_NAME + "#{save_number}", "r") do |save|
+  #   File.delete(save)
+  # end
+  # @@save_amount -= 1
+  
+  def serialize_board(unserialized_board)
+    Marshal.dump(unserialized_board)
+  end
+  
+  def deserialize_board(serialized_board)
+    Marshal.load(serialized_board)
+  end
+
+  private
+
+  def get_new_save_path(save_number)
+    SAVE_DIRECTORY + SAVE_NAME + @@save_amount.to_s
+  end
+
+  def get_existing_save_path(save_number)
+    SAVE_DIRECTORY + SAVE_NAME + save_number.to_s
+  end
 end
-
-Serializer.update_save_amount(+3)

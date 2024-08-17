@@ -17,10 +17,11 @@ require_relative "pieces/king.rb"
 # -- as well as to interact with the player
 class Chess
   include Display
+  include Serializer
   attr_reader :board
 
   def initialize
-    @board = Board.new
+    @board = nil
     @game_over = false
   end
 
@@ -29,13 +30,13 @@ class Chess
   end
 
   def introduce_player
+    Serializer.update_save_amount
     display_introduction
     display_main_menu
-    prompt_play_choice
+    process_play_choice(prompt_play_choice)
   end
 
   def play_game
-    board.setup_pieces
     print_board
     display_continue_prompt
   end
@@ -53,9 +54,20 @@ class Chess
   # trying out the game and send them to the main menu
   # display_final_message
 
+  def process_play_choice(play_choice)
+    if play_choice == "play"
+      @board = Board.new
+      @board.create_new_board
+      # @board.setup_pieces
+      @board.save_board
+    else
+      @board = Board.new
+      @board.load_board(play_choice)
+    end
+  end
+
   def prompt_play_choice
-    choice = receive_play_choice
-    puts "DEBUG -> RECEIVED #{choice}"
+    receive_play_choice
   end
 
   def prompt_move

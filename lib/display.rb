@@ -18,14 +18,23 @@ module Display
     display_continue_prompt
   end
 
-  def display_main_menu  
+  def display_saves
+    save_amount = Serializer.get_save_amount
+    if save_amount > 0
+      save_amount.times do |save_num|
+      puts "           [Save #{save_num + 1}]  "
+      end
+    end
+  end
+
+  def display_main_menu
     clear_screen
     puts Rainbow("      <~ [210's Chess] ~>").bright
-    Serializer.get_save_amount.times do |num|
-      puts "           [Save #{num + 1}]  "
-    end
+    display_saves
     puts
-    puts "Input the save number to load a save, or"
+    if Serializer.get_save_amount > 0
+      puts "Input the save number to load a save, or"
+    end
     puts "type in 'play' to start a new game!"
     puts
   end
