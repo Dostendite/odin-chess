@@ -14,6 +14,7 @@ require_relative "lib/pieces/king.rb"
 
 # remember to use bundle exec ruby main.rb!
 # and bin/rspec for tests
+
 chess = Chess.new
 chess.introduce_player
-chess.play_game
+chess.play_menu
