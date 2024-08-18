@@ -52,7 +52,7 @@ module Display
     end
   end
 
-  def display_board(board)
+  def display_board(board, msg_type = 0)
     clear_screen
     board.reverse.each_with_index do |row, index|
       row.each do |square|
@@ -64,6 +64,23 @@ module Display
       puts
     end
     puts Rainbow("  a b c d e f g h ").bright
+
+    display_extra_board_message(msg_type) unless msg_type == 0
+  end
+
+  def display_extra_board_message(msg_type = 0)
+    case msg_type
+    when "illegal"
+      display_illegal_message
+    when "under check"
+      display_under_check_message
+    when "en passant"
+      display_en_passant_message
+    when "stalemate"
+      display_stalemate_message
+    when "checkmate"
+      display_checkmate_message
+    end
   end
 
   def display_main_menu_reminder
@@ -74,26 +91,26 @@ module Display
     display_continue_prompt
   end
 
-  def display_illegal_message
-    puts "That's an illegal move, try again!"
-    puts
-  end
-
   def display_under_check_message
     puts "You can't move that piece! You're under check!"
-    puts
   end
 
-  def display_en_passant
+  def display_illegal_message
+    puts "That's an illegal move, try again!"
+  end
+
+  def display_king_under_check_message
+    puts "Can't move, your king is under check!"
+  end
+
+  def display_en_passant_message
     print "Duh, of course I coded in "
     print Rainbow("en passant").italic + " ;)"
-    puts
   end
 
   def display_stalemate_message
     print "OMG, there was a "
     puts Rainbow("stalemate! ").bright + "Nobody wins."
-    puts
   end
 
   def display_checkmate_message(winner_color = "Black")
@@ -133,7 +150,6 @@ module Display
   def display_move_prompt
     puts "Input your move coordinate...\n"
     puts "E.g.: " + Rainbow("Nf3 -> Knight to f3").gray.italic
-    puts
   end
 
   def display_continue_prompt
@@ -143,7 +159,8 @@ module Display
   end
 
   def clear_screen
-    system("cls || clear")
+    # cls on windows?
+    system("clear")
   end
 
   def print_skyblue(str, add_line = false)
