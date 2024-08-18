@@ -19,24 +19,37 @@ module Display
   end
 
   def display_saves
-    save_amount = Serializer.get_save_amount
-    if save_amount > 0
-      save_amount.times do |save_num|
-      puts "           [Save #{save_num + 1}]  "
-      end
+    save_numbers = Serializer.get_save_numbers
+    return if save_numbers.length == 0
+
+    save_numbers.each do |save_idx|
+      puts "           [Save #{save_idx}]  "
     end
   end
 
-  def display_main_menu
+  # maybe add a parameter (0, 1, 2)
+  # to display it along with the 
+  # new, load, delete prompt?
+  def display_main_menu(id = 0)
     clear_screen
     puts Rainbow("      <~ [210's Chess] ~>").bright
     display_saves
     puts
-    if Serializer.get_save_amount > 0
-      puts "Input the save number to load a save, or"
+
+    if Serializer.get_save_amount < 1
+      puts "Input 'new' to start a new game!"
+    else
+      puts "Input 'new', 'load', or 'delete'!"
     end
-    puts "type in 'play' to start a new game!"
-    puts
+
+    case id
+    when 1 # load
+      display_load_prompt
+    when 2 # delete
+      display_delete_prompt
+    when 3 # max saves
+      display_max_saves_message
+    end
   end
 
   def display_board(board)
@@ -51,6 +64,14 @@ module Display
       puts
     end
     puts Rainbow("  a b c d e f g h ").bright
+  end
+
+  def display_main_menu_reminder
+    clear_screen
+    puts "Remember that you'll be able to go back to"
+    puts "the main menu at any time by typing in 'main menu'!"
+    puts "Have fun :D"
+    display_continue_prompt
   end
 
   def display_illegal_message
@@ -80,6 +101,10 @@ module Display
     puts "#{winner_color.capitalize} wins!"
   end
 
+  def display_max_saves_message
+    puts "Can't start a new game, max save amount reached (8)."
+  end
+
   def display_final_message
     clear_screen
     final_message = <<~HEREDOC
@@ -95,6 +120,14 @@ module Display
   def display_promote_prompt
     puts "Input piece to promote your pawn to..."
     puts
+  end
+
+  def display_load_prompt
+    puts "Enter save number to load..."
+  end
+
+  def display_delete_prompt
+    puts "Input save number to delete..."
   end
 
   def display_move_prompt
