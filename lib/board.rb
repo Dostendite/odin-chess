@@ -196,6 +196,13 @@ class Board
     # 
   end
 
+  # uses pain notation
+  def move_out_of_bounds?(target_position)
+    row, column = target_position
+
+    !@board[row][column].instance_of?(Square)
+  end
+
   # Optimize: Make it so that the player
   # can just input the move notation
   # https://en.wikipedia.org/wiki/Algebraic_notation_(chess)
