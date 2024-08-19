@@ -3,10 +3,9 @@ Capstone Ruby Project
 
 📎 [**Eraser.io Diagram**](https://app.eraser.io/workspace/eYiXDPKXy40Zk8JtDkIm?origin=share)
 
-![Chess Game Diagram](https://i.imgur.com/LX9ffxQ.png)
-
 ### Pending
 - Game implementation
+- Test implementation
 - Screenshots *(Start, mid-game)*
 - Notes & Possible improvements
 
