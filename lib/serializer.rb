@@ -41,8 +41,6 @@ module Serializer
     File.write(save_path, serialized_board)
   end
 
-  require("pry-byebug")
-
   def get_missing_save_number
     @@save_numbers.each_index do |idx|
       return if @@save_numbers.length == (idx - 1)

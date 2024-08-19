@@ -14,17 +14,16 @@ class Pawn < Piece
     @symbol = "P"
     @can_double_jump = true
   end
-  # when a pawn does a double jump,
-  # the first square in front
-  # becomes en-passantable
 
   def vertical_move?
     if @can_double_jump
-      "two forwards"
+      2
     else
       1
     end
   end
 
-  def diagonal_move?; end
+  def forwards_diagonal_move?
+    1
+  end
 end

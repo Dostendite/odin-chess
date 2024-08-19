@@ -8,8 +8,4 @@ class Knight < Piece
     super(color, position)
     @symbol = "K"
   end
-
-  def knight_move?
-    
-  end
 end

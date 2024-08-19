@@ -20,8 +20,9 @@ class Piece
     return "range"
   end
 
-  def fetch_horizontal_move(range); end
-  def fetch_vertical_move(range); end
-  def fetch_diagonal_move(range); end
-  def fetch_knight_move; end
+  def forwards_diagonal_move?
+  end
+
+  def backwards_diagonal_move?
+  end
 end

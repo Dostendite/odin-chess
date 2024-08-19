@@ -21,44 +21,19 @@ class Board
   attr_accessor :board, :current_turn, :save_number
 
   def initialize(board = nil)
-    @board = board
+    @board = nil
     @current_turn = "White"
     @new_game = true
     @save_number = nil
-  end
-
-  def load_board(save_number)
-    @board = load_save(save_number)
-    @save_number = Serializer.get_save_amount
-    @new_game = false
-  end
-
-  def translate_coordinates(position)
-    # "d4" -> [3][3]
-    pair_output = []
-  
-    row = (position[1].to_i) - 1
-    column = (position[0].ord) - ORD_BASE
-  
-    pair_output << row
-    pair_output << column
-  end
-  
-  def translate_coordinates_reverse(row, column)
-    # [1][7] -> "h2"
-    algebraic_output = ""
-  
-    number = (row + 1).to_s
-    letter = (column + ORD_BASE).chr
-  
-    algebraic_output << letter
-    algebraic_output << number
+    @en_passant_pawn_square = nil # last pawn to do en passant (to remove)
+    @piece_types = {"N" => Knight, "B" => Bishop, 
+                    "R" => Rook, "Q" => Queen, "K" => King}
   end
 
   def create_new_board
     @board = generate_board
   end
-
+  
   def generate_board(board = [])
     current_color = "Black"
     (1..8).each do |number|
@@ -75,10 +50,33 @@ class Board
     board
   end
 
+  def load_board(save_number)
+    @board = load_save(save_number)
+    @save_number = Serializer.get_save_amount
+    @new_game = false
+  end
+
   def move_piece(piece, target_position)
     target_position = translate_coordinates(target_position)
     remove_piece(piece.position)
     add_piece(target_position, piece)
+  end
+
+  def add_piece(position, piece)
+    row, column = position
+    target_square = @board[row][column]
+    target_square.piece = piece
+  end
+
+  def remove_piece(position)
+    row, column = position
+    target_square = @board[row][column]
+    target_square.piece = nil
+  end
+
+  def promote_pawn(pawn)
+    queen = create_piece("queen", pawn.color, pawn.position)
+    @board.add_piece(pawn.position, queen)
   end
 
   def create_piece(type, color, position)
@@ -118,6 +116,7 @@ class Board
     end
   end
 
+  # Optimize: All setup methods
   def setup_rooks(color)
     file = find_color_file(color)
 
@@ -171,46 +170,38 @@ class Board
     setup_royalty("Black")
   end
 
-  def clear_squares(target_position)
-    # run for all pieces except
-    # the knight, this method checks
-    # if there's a piece obstructing
-    # the desired path
+  def pieces_include?(piece_type)
+    !@piece_types[piece_type.upcase].nil?
   end
 
-  def under_attack?(row, column)
-    # return true if a square is under attack
-    # scan all possible moves from all pieces
-    # this might be the most important
-    # predicate method, as it will
-    # help find out what moves are legal
-    # (especially in situations where the
-    # king is under multiple threats, and
-    # tactics like pins & skewers)
+  # should probably delete this method
+
+  # def piece_available?(piece_type)
+  #   piece_type = find_piece_class(piece_type.upcase)
+  #   return false if piece_type.nil?
+
+  #   @board.each do |row|
+  #     row.any? do |square|
+  #       next if square.empty?
+  
+  #       if square.piece.instance_of?(piece_type) && square.piece.color == @current_turn
+  #         return true
+  #       end
+  #     end
+  #   end
+  #   false
+  # end
+  
+  def swap_players
+    if @current_turn == "White"
+      @current_turn = "Black"
+    else
+      @current_turn = "White"
+    end
   end
 
-  def legal_move?(piece_position, target_position)
-    # return true if a move is legal
-    # cases:
-    # king moves into a place where it can get captured
-    # 
-  end
-
-  # uses pain notation
-  def move_out_of_bounds?(target_position)
-    row, column = target_position
-
-    !@board[row][column].instance_of?(Square)
-  end
-
-  # Optimize: Make it so that the player
-  # can just input the move notation
-  # https://en.wikipedia.org/wiki/Algebraic_notation_(chess)
-  def disambiguate_move_pieces
-    # when multiple pieces of the
-    # same type can move to the same
-    # square, return those pieces
-    # to prompt the player for a choice
+  def find_piece_class(piece_type)
+    @piece_types[piece_type]
   end
 
   def can_promote?(pawn)
@@ -221,21 +212,32 @@ class Board
     end
   end
 
-  def add_piece(position, piece)
-    row, column = position
-    target_square = @board[row][column]
-    target_square.piece = piece
+  def move_out_of_bounds?(target_position)
+    target_position = translate_coordinates(target_position)
+    row, column = target_position
+    !(0..7).include?(row) || !(0..7).include?(column)
   end
 
-  def remove_piece(position)
-    row, column = position
-    target_square = @board[row][column]
-    target_square.piece = nil
+  def translate_coordinates(position)
+    # "d4" -> [3][3]
+    pair_output = []
+  
+    row = (position[1].to_i) - 1
+    column = (position[0].ord) - ORD_BASE
+  
+    pair_output << row
+    pair_output << column
   end
-
-  def promote_pawn(pawn)
-    queen = create_piece("queen", pawn.color, pawn.position)
-    @board.add_piece(pawn.position, queen)
+  
+  def translate_coordinates_reverse(row, column)
+    # [1][7] -> "h2"
+    algebraic_output = ""
+  
+    number = (row + 1).to_s
+    letter = (column + ORD_BASE).chr
+  
+    algebraic_output << letter
+    algebraic_output << number
   end
 
   def save_board

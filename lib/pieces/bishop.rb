@@ -8,8 +8,4 @@ class Bishop < Piece
     super(color, position)
     @symbol = "B"
   end
-
-  def diagonal_move?
-    "infinite"
-  end
 end

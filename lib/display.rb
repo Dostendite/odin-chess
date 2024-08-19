@@ -4,6 +4,10 @@
 module Display
   include Serializer
 
+  def print_board(msg_type)
+    display_board(@chess_board.board, msg_type)
+  end
+
   def display_introduction
     clear_screen
     introduction = <<~HEREDOC
@@ -70,6 +74,8 @@ module Display
 
   def display_extra_board_message(msg_type = 0)
     case msg_type
+    when "move not valid"
+      display_move_not_valid_message
     when "illegal"
       display_illegal_message
     when "under check"
@@ -91,31 +97,36 @@ module Display
     display_continue_prompt
   end
 
+  def display_move_not_valid_message
+    print_skyblue("Please input a valid move!", true)
+  end
+
   def display_under_check_message
-    puts "You can't move that piece! You're under check!"
+    print_skyblue("You can't move that piece! You're under check!", true)
   end
 
   def display_illegal_message
-    puts "That's an illegal move, try again!"
+    print_skyblue("That's an illegal move, try again!", true)
   end
 
   def display_king_under_check_message
-    puts "Can't move, your king is under check!"
+    print_skyblue("Can't move, your king is under check!", true)
   end
 
   def display_en_passant_message
-    print "Duh, of course I coded in "
-    print Rainbow("en passant").italic + " ;)"
+    print_skyblue("Duh, of course I coded in ")
+    print Rainbow("en passant").skyblue.italic + " ;)"
   end
 
   def display_stalemate_message
-    print "OMG, there was a "
-    puts Rainbow("stalemate! ").bright + "Nobody wins."
+    print_skyblue("OMG, there was a ")
+    puts Rainbow("stalemate! ").skyblue.bright
+    print_skyblue("Nobody wins.")
   end
 
   def display_checkmate_message(winner_color = "Black")
-    print {Rainbow("Checkmate! ").bright}
-    puts "#{winner_color.capitalize} wins!"
+    print {Rainbow("Checkmate! ").skyblue.bright}
+    print_skyblue("#{winner_color.capitalize} wins!")
   end
 
   def display_max_saves_message

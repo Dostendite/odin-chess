@@ -3,6 +3,7 @@ require_relative "chess"
 require_relative "display"
 require_relative "serializer"
 require_relative "square"
+require_relative "move_validator"
 
 require_relative "pieces/piece.rb"
 require_relative "pieces/pawn.rb"
@@ -18,21 +19,19 @@ require_relative "pieces/king.rb"
 class Chess
   include Display
   include Serializer
+  include MoveValidator
   attr_reader :board
 
   def initialize
-    @board = nil
+    @chess_board = nil
     @game_over = false
     @displayed_reminder = false
     @displayed_en_passant = false
   end
-
-  # main game loop
-  def play_game
-    until @game_over
-      print_board
-      process_move_choice(prompt_move_choice)
-    end
+  
+  def introduce_player
+    Serializer.update_save_numbers
+    display_introduction
   end
 
   def play_menu
@@ -44,17 +43,8 @@ class Chess
     end
   end
 
-  def introduce_player
-    Serializer.update_save_numbers
-    display_introduction
-  end
-
-  def print_board
-    display_board(@board.board)
-  end
-
-  # -------- GAME --------
-  # 1. Set up the board & the pieces
+  # -------- CHESS --------
+  # 1. Set up the board & pieces
   # 2. Prompt for a move
   # 3. Move the desired piece
   # 4. Repeat
@@ -66,28 +56,37 @@ class Chess
   # trying out the game and send them to the main menu
   # display_final_message
 
-  def play_move(piece, position)
-    @board.move_piece
+  # main game loop - add stale, en passant & checkmate
+  def play_game
+    until @game_over
+      play_move
+      board.swap_players
+    end
+  end
+
+  def play_move(msg_type = 0)
+    print_board(msg_type)
+    process_move_choice(prompt_move_choice)
   end
 
   def create_new_game
-    @board = Board.new
-    @board.create_new_board
-    @board.setup_pieces
-    @board.save_board
+    @chess_board = Board.new
+    @chess_board.create_new_board
+    @chess_board.setup_pieces
+    @chess_board.save_board
     Serializer.update_save_numbers
     play_game
   end
 
-  def leave_game
-    @board.save_board
-    play_menu
-  end
+  # def leave_game
+  #   @chess_board.save_board
+  #   play_menu
+  # end
 
   def load_game(save_number)
     Serializer.update_save_numbers
-    @board = Board.new
-    @board.load_board(save_number)
+    @chess_board = Board.new
+    @chess_board.load_board(save_number)
   end
 
   def process_menu_choice(play_choice)
@@ -106,21 +105,10 @@ class Chess
     end
     play_game
   end
-
-  def process_move_choice(move_choice)
-    if move_choice == "main"
-      play_menu
-    end
-  end
   
   def prompt_delete_choice
     display_main_menu(2)
     receive_delete_choice
-  end
-
-  def prompt_move_choice
-    display_move_prompt
-    receive_move_choice
   end
 
   private
@@ -140,16 +128,6 @@ class Chess
         puts "Please enter 'new', 'load, or 'delete'!"
         puts
       end
-    end
-  end
-
-  # NITTY GRITTY
-  def receive_move_choice
-    move_choice = gets.chomp
-    if move_choice[0..3] == "main"
-      return "main"
-    else
-      move_choice
     end
   end
 
