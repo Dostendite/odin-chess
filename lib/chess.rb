@@ -66,14 +66,13 @@ class Chess
     play_game
   end
 
-  require "pry-byebug"
-
   def play_game
     until @game_over
       MoveValidator.update_board(@chess_board)
       play_move
       @chess_board = MoveValidator.export_board
       @chess_board.swap_players
+      @chess_board.save_board
     end
     display_final_message
   end

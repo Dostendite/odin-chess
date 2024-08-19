@@ -102,19 +102,36 @@ class Board
     horizontal_squares = []
     piece_row, piece_column = piece.position
     (1..piece.horizontal_range).each do |column_delta|
-      # binding.pry
-      rightside_square = @board[piece_row][piece_column + column_delta]
-      leftside_square = @board[piece_row][piece_column - column_delta]
-      
-      horizontal_squares << rightside_square unless rightside_square.nil?
-      horizontal_squares << leftside_square unless leftside_square.nil?
+      next if move_out_of_bounds?([piece_row, piece_column + column_delta])
+
+      horizontal_squares << @board[piece_row][piece_column + column_delta]
     end
 
+    (1..piece.horizontal_range).each do |column_delta|
+      next if move_out_of_bounds?([piece_row, piece_column - column_delta]) 
+      
+      horizontal_squares << @board[piece_row][piece_column - column_delta]
+    end
     horizontal_squares
   end
 
   def find_vertical_squares(piece)
     vertical_squares = []
+    piece_row, piece_column = piece.position
+    (1..piece.vertical_forward_range).each do |row_delta|
+      next if move_out_of_bounds?([piece_row + row_delta, piece_column])
+
+      forward_square = @board[piece_row + row_delta][piece_column]
+      vertical_squares << forward_square
+    end
+
+    (1..piece.vertical_backward_range).each do |row_delta|
+      next if move_out_of_bounds?([piece_row - row_delta, piece_column])
+
+      backward_square = @board[piece_row - row_delta][piece_column]
+      vertical_squares << backward_square
+    end
+    vertical_squares
   end
 
   def find_diagonal_squares(piece)
@@ -130,7 +147,7 @@ class Board
   def move_piece(piece, target_position_pair)
     remove_piece(piece.position)
     piece.position = target_position_pair
-    add_piece(target_position_pair, piece)
+    add_piece(piece.position, piece)
   end
 
   def add_piece(position_pair, piece)

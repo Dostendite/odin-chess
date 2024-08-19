@@ -29,13 +29,10 @@ module MoveValidator
   def process_move(move_algebraic)
     target_piece_type = @@board.find_piece_class(move_algebraic[0].upcase)
     target_position_pair = translate_to_pair(move_algebraic[-2..])
-    # binding.pry
 
     pieces_in_range = @@board.find_pieces_in_range(target_piece_type, target_position_pair)
-    
     play_move("move not valid") if pieces_in_range.length < 1
 
-    # binding.pry
     if pieces_in_range.length > 1
       display_board(@@board.board)
       piece_to_move = prompt_piece_to_move(pieces_in_range)
