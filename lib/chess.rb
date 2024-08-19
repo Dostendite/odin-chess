@@ -1,8 +1,8 @@
 require_relative "board"
 require_relative "chess"
+require_relative "square"
 require_relative "display"
 require_relative "serializer"
-require_relative "square"
 require_relative "move_validator"
 
 require_relative "pieces/piece.rb"
@@ -57,19 +57,7 @@ class Chess
   # display_final_message
 
   # main game loop - add stale, en passant & checkmate
-  def play_game
-    until @game_over
-      play_move
-      board.swap_players
-    end
-  end
-
-  def play_move(msg_type = 0)
-    print_board(msg_type)
-    process_move_choice(prompt_move_choice)
-  end
-
-  def create_new_game
+  def start_new_game
     @chess_board = Board.new
     @chess_board.create_new_board
     @chess_board.setup_pieces
@@ -78,10 +66,30 @@ class Chess
     play_game
   end
 
-  # def leave_game
-  #   @chess_board.save_board
-  #   play_menu
-  # end
+  require "pry-byebug"
+
+  def play_game
+    until @game_over
+      MoveValidator.update_board(@chess_board)
+      play_move
+      @chess_board = MoveValidator.export_board
+      @chess_board.swap_players
+    end
+    display_final_message
+  end
+
+  def game_over
+    # mated_color = find_checkmate
+    # display_checkmate_message(mated_color)
+    # ^^ under the board
+    # @game_over = true
+  end
+
+  # ???
+  def leave_game
+    @chess_board.save_board
+    play_menu
+  end
 
   def load_game(save_number)
     Serializer.update_save_numbers
@@ -94,7 +102,7 @@ class Chess
       display_main_menu(3)
       process_menu_choice(receive_main_menu_choice)
     elsif play_choice == "new"
-      create_new_game
+      start_new_game
     elsif play_choice == "delete"
       delete_save(prompt_delete_choice)
       Serializer.update_save_numbers

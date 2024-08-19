@@ -12,17 +12,7 @@ class Piece
     @position = position
   end
 
-  def horizontal_move?
-    return "range"
-  end
-
-  def vertical_move?
-    return "range"
-  end
-
-  def forwards_diagonal_move?
-  end
-
-  def backwards_diagonal_move?
+  def black?
+    @color == "Black"
   end
 end

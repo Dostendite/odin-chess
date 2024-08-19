@@ -1,5 +1,6 @@
 require_relative "square"
 require_relative "serializer"
+require_relative "move_validator"
 
 require_relative "pieces/piece.rb"
 require_relative "pieces/pawn.rb"
@@ -18,6 +19,7 @@ ORD_BASE = 97
 # -- to the chess class
 class Board
   include Serializer
+  include MoveValidator
   attr_accessor :board, :current_turn, :save_number
 
   def initialize(board = nil)
@@ -26,8 +28,8 @@ class Board
     @new_game = true
     @save_number = nil
     @en_passant_pawn_square = nil # last pawn to do en passant (to remove)
-    @piece_types = {"N" => Knight, "B" => Bishop, 
-                    "R" => Rook, "Q" => Queen, "K" => King}
+    @piece_types = {"N" => Knight, "B" => Bishop, "R" => Rook, 
+                    "Q" => Queen, "K" => King}
   end
 
   def create_new_board
@@ -50,28 +52,96 @@ class Board
     board
   end
 
+  # METHODS THAT WORK WITH MOVE VALIDATOR
+  require "pry-byebug"
+
+  # return a piece that is in range of that move
+  def find_pieces_in_range(piece_type, target_position_pair)
+    pieces_in_range = []
+    available_pieces = find_available_pieces(piece_type)
+    
+    available_pieces.each do |piece|
+      squares_in_range = find_squares_in_range(piece)
+      squares_in_range.each do |square|
+        square_position_pair = translate_to_pair(square.coordinate)
+        if square_position_pair == target_position_pair
+          pieces_in_range << piece
+          break
+        end
+      end
+    end
+    pieces_in_range
+  end
+
+  def find_available_pieces(piece_type, color = @current_turn)
+    available_pieces = []
+    @board.each do |row|
+      row.each do |square|
+        next if square.empty?
+
+        if square.piece.color == color && square.piece.instance_of?(piece_type)
+          available_pieces << square.piece
+        end
+      end
+    end
+    available_pieces
+  end
+
+  def find_squares_in_range(piece)
+    if piece.instance_of?(Knight)
+      squares_in_range = find_knight_squares(piece)
+    else
+      squares_in_range = find_horizontal_squares(piece)
+      squares_in_range += find_vertical_squares(piece)
+      squares_in_range += find_diagonal_squares(piece)
+    end
+    squares_in_range
+  end
+
+  def find_horizontal_squares(piece)
+    horizontal_squares = []
+    piece_row, piece_column = piece.position
+    (1..piece.horizontal_range).each do |column_delta|
+      # binding.pry
+      rightside_square = @board[piece_row][piece_column + column_delta]
+      leftside_square = @board[piece_row][piece_column - column_delta]
+      
+      horizontal_squares << rightside_square unless rightside_square.nil?
+      horizontal_squares << leftside_square unless leftside_square.nil?
+    end
+
+    horizontal_squares
+  end
+
+  def find_vertical_squares(piece)
+    vertical_squares = []
+  end
+
+  def find_diagonal_squares(piece)
+    diagonal_squares = []
+  end
+
   def load_board(save_number)
     @board = load_save(save_number)
     @save_number = Serializer.get_save_amount
     @new_game = false
   end
 
-  def move_piece(piece, target_position)
-    target_position = translate_coordinates(target_position)
+  def move_piece(piece, target_position_pair)
     remove_piece(piece.position)
-    add_piece(target_position, piece)
+    piece.position = target_position_pair
+    add_piece(target_position_pair, piece)
   end
 
-  def add_piece(position, piece)
-    row, column = position
+  def add_piece(position_pair, piece)
+    row, column = position_pair
     target_square = @board[row][column]
     target_square.piece = piece
   end
 
-  def remove_piece(position)
-    row, column = position
-    target_square = @board[row][column]
-    target_square.piece = nil
+  def remove_piece(position_pair)
+    row, column = position_pair
+    @board[row][column].piece = nil
   end
 
   def promote_pawn(pawn)
@@ -84,7 +154,6 @@ class Board
   end
 
   # Optimize: All setup methods
-  
   def create_piece(type, color, position)
     case type
     when "Pawn"
@@ -163,16 +232,16 @@ class Board
   end
 
   def setup_pieces
-    setup_pawns("White")
-    setup_pawns("Black")
+    # setup_pawns("White")
+    # setup_pawns("Black")
     setup_rooks("White")
     setup_rooks("Black")
-    setup_knights("White")
-    setup_knights("Black")
-    setup_bishops("White")
-    setup_bishops("Black")
-    setup_royalty("White")
-    setup_royalty("Black")
+    # setup_knights("White")
+    # setup_knights("Black")
+    # setup_bishops("White")
+    # setup_bishops("Black")
+    # setup_royalty("White")
+    # setup_royalty("Black")
   end
   
   def swap_players
@@ -195,9 +264,8 @@ class Board
     end
   end
 
-  def move_out_of_bounds?(target_position)
-    target_position = translate_coordinates(target_position)
-    row, column = target_position
+  def move_out_of_bounds?(target_position_pair)
+    row, column = target_position_pair
     !(0..7).include?(row) || !(0..7).include?(column)
   end
 

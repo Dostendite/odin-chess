@@ -15,15 +15,11 @@ class Pawn < Piece
     @can_double_jump = true
   end
 
-  def vertical_move?
+  def get_pawn_range
     if @can_double_jump
       2
     else
       1
     end
-  end
-
-  def forwards_diagonal_move?
-    1
   end
 end

@@ -4,8 +4,8 @@
 module Display
   include Serializer
 
-  def print_board(msg_type)
-    display_board(@chess_board.board, msg_type)
+  def print_board(board, msg_type = 0)
+    display_board(board, msg_type)
   end
 
   def display_introduction
@@ -158,8 +158,17 @@ module Display
     puts "Input save number to delete..."
   end
 
-  def display_move_prompt
-    puts "Input your move coordinate...\n"
+  def display_multiple_move_prompt(pieces_in_range)
+    puts "Found #{pieces_in_range.length} in range."
+    pieces_in_range.each_with_index do |piece, idx|
+      puts "#{idx} -> #{piece.class} at #{piece.position}"
+    end
+    puts "Please input the index of the piece you want to move..."
+  end
+
+  def display_move_prompt(current_turn)
+    print_skyblue("[#{current_turn}] ")
+    print "Input your move coordinate...\n"
     puts "E.g.: " + Rainbow("Nf3 -> Knight to f3").gray.italic
   end
 
