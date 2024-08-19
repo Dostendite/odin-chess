@@ -1,50 +1,10 @@
 module MoveValidator
   include Display
 
-  def play_move(msg_type = 0)
-    print_board(msg_type)
-    process_move_choice(prompt_move_choice)
+  def play_move
+    display
   end
 
-  def valid_pawn_move?(pawn_move_choice)
-    row, column = translate_coordinates(pawn_move_choice)
-    return false if move_out_of_bounds?(row, column)
-    return false if !pawn_in_reach?(row, column)
-  end
-
-  def pawn_in_reach?(target_row, target_column)
-    if @current_turn == "White"
-      one_below = @board[row - 1][column]
-      if one_below.piece.instance_of?(Pawn)
-        one_below.piece.can_double_jump = false
-        return true
-      end
-    else
-      one_above = @board[row + 1][column]
-      if one_above.piece.instance_of?(Pawn)
-        one_above.piece.can_double_jump = false
-        return true
-      end
-    end
-  end
-
-  def process_move_choice(move_choice)
-    play_menu if move_choice == "main"
-
-    if move_choice.include?("pawn")
-      if board.valid_pawn_move?(move_choice)
-        board.play_move()
-      else
-        play_game("illegal")
-      end
-    end
-  end
-
-  def prompt_move_choice
-    display_move_prompt
-    receive_move_choice
-  end
-  
   def run_simulation(condition)
     # condition could be to block
   end
@@ -93,47 +53,6 @@ module MoveValidator
     # same type can move to the same
     # square, return those pieces
     # to prompt the player for a choice
-  end
-
-  # NITTY GRITTY
-  def receive_move_choice
-    move_choice = gets.chomp
-    return "main" if move_choice[0..3] == "main"
-
-    move_choice = validate_algebraic_notation(move_choice)
-  end
-
-  def validate_algebraic_notation(move_choice)
-    # binding.pry
-    if move_choice.length < 2 || move_choice.length > 4
-      play_move("move not valid")
-    elsif board.move_out_of_bounds?(move_choice[-2..])
-      play_move("move not valid")
-    elsif move_choice.length == 2
-      return validate_pawn_move_choice(move_choice)
-    elsif !board.pieces_include?(move_choice[0])         
-      play_move("move not valid")
-    else
-      return validate_piece_move_choice(move_choice)
-    end
-  end
-
-  def validate_pawn_move_choice(pawn_move_choice)
-    if board.valid_pawn_move?(pawn_move_choice)
-      pawn_move_choice + "pawn"
-    end
-  end
-
-  def validate_piece_move_choice(algebraic_move_choice)
-    # check for moves that would leave the king in check,
-    # and those outside of the reach of the pieces
-    piece_choice = algebraic_move_choice[0].downcase
-    position_choice = algebraic_move_choice[-2..].downcase
-
-    # binding.pry
-    play_move("illegal") if !board.piece_available?(piece_choice)
-    
-    algebraic_move_choice
   end
 
   def translate_coordinates(position)
