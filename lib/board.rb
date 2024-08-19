@@ -155,20 +155,7 @@ class Board
 
   # Optimize: All setup methods
   def create_piece(type, color, position)
-    case type
-    when "Pawn"
-      return Pawn.new(color, position)
-    when "Knight"
-      return Knight.new(color, position)
-    when "Bishop"
-      return Bishop.new(color, position)
-    when "Rook"
-      return Rook.new(color, position)
-    when "Queen"
-      return Queen.new(color, position)
-    when "King"
-      return King.new(color, position)
-    end
+    return type.new(color, position)
   end
 
   def find_color_file(color)
@@ -186,62 +173,54 @@ class Board
       file = 1
     end
     8.times do |rank|
-      pawn = create_piece("Pawn", color, [file, rank])
+      pawn = create_piece(Pawn, color, [file, rank])
       add_piece(pawn.position, pawn)
     end
   end
 
   def setup_rooks(color)
     file = find_color_file(color)
-
-    rook_left = create_piece("Rook", color, [file, 0])
-    rook_right = create_piece("Rook", color, [file, 7])
-  
+    rook_left = create_piece(Rook, color, [file, 0])
+    rook_right = create_piece(Rook, color, [file, 7])
     add_piece(rook_left.position, rook_left)
     add_piece(rook_right.position, rook_right)
   end
 
   def setup_knights(color)
     file = find_color_file(color)
-
-    knight_left = create_piece("Knight", color, [file, 1])
-    knight_right = create_piece("Knight", color, [file, 6])
-
+    knight_left = create_piece(Knight, color, [file, 1])
+    knight_right = create_piece(Knight, color, [file, 6])
     add_piece(knight_left.position, knight_left)
     add_piece(knight_right.position, knight_right)
   end
 
   def setup_bishops(color)
     file = find_color_file(color)
-    
-    bishop_left = create_piece("Bishop", color, [file, 2])
-    bishop_right = create_piece("Bishop", color, [file, 5])
-
+    bishop_left = create_piece(Bishop, color, [file, 2])
+    bishop_right = create_piece(Bishop, color, [file, 5])
     add_piece(bishop_left.position, bishop_left)
     add_piece(bishop_right.position, bishop_right)
   end
 
   def setup_royalty(color)
     file = find_color_file(color)
-
-    queen = create_piece("Queen", color, [file, 3])
-    king = create_piece("King", color, [file, 4])
-    
+    queen = create_piece(Queen, color, [file, 3])
+    king = create_piece(King, color, [file, 4])
     add_piece(queen.position, queen)
     add_piece(king.position, king)
   end
 
   def setup_pieces
-    # setup_pawns("White")
-    # setup_pawns("Black")
+    setup_pawns("White")
+    setup_pawns("Black")
     setup_rooks("White")
     setup_rooks("Black")
-    # setup_knights("White")
-    # setup_knights("Black")
-    # setup_bishops("White")
-    # setup_bishops("Black")
-    # setup_royalty("White")
-    # setup_royalty("Black")
+    setup_knights("White")
+    setup_knights("Black")
+    setup_bishops("White")
+    setup_bishops("Black")
+    setup_royalty("White")
+    setup_royalty("Black")
   end
   
   def swap_players
