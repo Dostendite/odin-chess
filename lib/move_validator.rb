@@ -1,5 +1,11 @@
 module MoveValidator
   include Display
+
+  def play_move(msg_type = 0)
+    print_board(msg_type)
+    process_move_choice(prompt_move_choice)
+  end
+
   def valid_pawn_move?(pawn_move_choice)
     row, column = translate_coordinates(pawn_move_choice)
     return false if move_out_of_bounds?(row, column)
@@ -89,35 +95,35 @@ module MoveValidator
     # to prompt the player for a choice
   end
 
-    # NITTY GRITTY
-    def receive_move_choice
-      move_choice = gets.chomp
-      return "main" if move_choice[0..3] == "main"
-  
-      move_choice = validate_algebraic_notation(move_choice)
+  # NITTY GRITTY
+  def receive_move_choice
+    move_choice = gets.chomp
+    return "main" if move_choice[0..3] == "main"
+
+    move_choice = validate_algebraic_notation(move_choice)
+  end
+
+  def validate_algebraic_notation(move_choice)
+    # binding.pry
+    if move_choice.length < 2 || move_choice.length > 4
+      play_move("move not valid")
+    elsif board.move_out_of_bounds?(move_choice[-2..])
+      play_move("move not valid")
+    elsif move_choice.length == 2
+      return validate_pawn_move_choice(move_choice)
+    elsif !board.pieces_include?(move_choice[0])         
+      play_move("move not valid")
+    else
+      return validate_piece_move_choice(move_choice)
     end
-  
-    def validate_algebraic_notation(move_choice)
-      # binding.pry
-      if move_choice.length < 2 || move_choice.length > 4
-        play_move("move not valid")
-      elsif board.move_out_of_bounds?(move_choice[-2..])
-        play_move("move not valid")
-      elsif move_choice.length == 2
-        return validate_pawn_move_choice(move_choice)
-      elsif !board.pieces_include?(move_choice[0])         
-        play_move("move not valid")
-      else
-        return validate_piece_move_choice(move_choice)
-      end
+  end
+
+  def validate_pawn_move_choice(pawn_move_choice)
+    if board.valid_pawn_move?(pawn_move_choice)
+      pawn_move_choice + "pawn"
     end
-  
-    def validate_pawn_move_choice(pawn_move_choice)
-      if board.valid_pawn_move?(pawn_move_choice)
-        pawn_move_choice + "pawn"
-      end
-    end
-  
+  end
+
   def validate_piece_move_choice(algebraic_move_choice)
     # check for moves that would leave the king in check,
     # and those outside of the reach of the pieces
@@ -128,5 +134,27 @@ module MoveValidator
     play_move("illegal") if !board.piece_available?(piece_choice)
     
     algebraic_move_choice
+  end
+
+  def translate_coordinates(position)
+    # "d4" -> [3][3]
+    pair_output = []
+  
+    row = (position[1].to_i) - 1
+    column = (position[0].ord) - ORD_BASE
+  
+    pair_output << row
+    pair_output << column
+  end
+  
+  def translate_coordinates_reverse(row, column)
+    # [1][7] -> "h2"
+    algebraic_output = ""
+  
+    number = (row + 1).to_s
+    letter = (column + ORD_BASE).chr
+  
+    algebraic_output << letter
+    algebraic_output << number
   end
 end

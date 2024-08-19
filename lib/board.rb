@@ -79,6 +79,12 @@ class Board
     @board.add_piece(pawn.position, queen)
   end
 
+  def find_piece_class(piece_type)
+    @piece_types[piece_type]
+  end
+
+  # Optimize: All setup methods
+  
   def create_piece(type, color, position)
     case type
     when "Pawn"
@@ -116,7 +122,6 @@ class Board
     end
   end
 
-  # Optimize: All setup methods
   def setup_rooks(color)
     file = find_color_file(color)
 
@@ -169,28 +174,6 @@ class Board
     setup_royalty("White")
     setup_royalty("Black")
   end
-
-  def pieces_include?(piece_type)
-    !@piece_types[piece_type.upcase].nil?
-  end
-
-  # should probably delete this method
-
-  # def piece_available?(piece_type)
-  #   piece_type = find_piece_class(piece_type.upcase)
-  #   return false if piece_type.nil?
-
-  #   @board.each do |row|
-  #     row.any? do |square|
-  #       next if square.empty?
-  
-  #       if square.piece.instance_of?(piece_type) && square.piece.color == @current_turn
-  #         return true
-  #       end
-  #     end
-  #   end
-  #   false
-  # end
   
   def swap_players
     if @current_turn == "White"
@@ -200,8 +183,8 @@ class Board
     end
   end
 
-  def find_piece_class(piece_type)
-    @piece_types[piece_type]
+  def pieces_include?(piece_type)
+    !@piece_types[piece_type.upcase].nil?
   end
 
   def can_promote?(pawn)
@@ -216,28 +199,6 @@ class Board
     target_position = translate_coordinates(target_position)
     row, column = target_position
     !(0..7).include?(row) || !(0..7).include?(column)
-  end
-
-  def translate_coordinates(position)
-    # "d4" -> [3][3]
-    pair_output = []
-  
-    row = (position[1].to_i) - 1
-    column = (position[0].ord) - ORD_BASE
-  
-    pair_output << row
-    pair_output << column
-  end
-  
-  def translate_coordinates_reverse(row, column)
-    # [1][7] -> "h2"
-    algebraic_output = ""
-  
-    number = (row + 1).to_s
-    letter = (column + ORD_BASE).chr
-  
-    algebraic_output << letter
-    algebraic_output << number
   end
 
   def save_board
