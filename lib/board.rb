@@ -55,6 +55,49 @@ class Board
   # METHODS THAT WORK WITH MOVE VALIDATOR
   require "pry-byebug"
 
+  def find_pawn_below(target_position_pair, increment)
+    target_row, target_column = target_position_pair
+
+    # could use this to refactor the huge methods below
+    delta = @current_turn == "Black" ? increment : -increment
+    square_below = @board[target_row + delta][target_column]
+    validate_pawn_below(square_below, increment)
+  end
+
+  def validate_pawn_below(square_below, increment)
+    if !square_below.empty? && square_below.piece.instance_of?(Pawn)
+      if increment == 2 && square_below.piece.can_double_jump == false
+        return nil
+      end
+      square_below.piece.can_double_jump = false
+      square_below.piece
+    end
+  end
+
+  def find_attacking_pawns(target_position_pair)
+    attacking_pawns = []
+    target_row, target_column = target_position_pair
+
+    if @current_turn == "Black"
+      left_side = @board[target_row + 1][target_column - 1]
+      right_side = @board[target_row + 1][target_column + 1]
+    else
+      left_side = @board[target_row - 1][target_column - 1]
+      right_side = @board[target_row - 1][target_column + 1]
+    end
+
+    if !left_side.empty? && left_side.piece.instance_of?(Pawn) &&
+      left_side.piece.color == @current_turn
+      attacking_pawns << left_side.piece
+    end
+
+    if !right_side.empty? && right_side.piece.instance_of?(Pawn) &&
+      right_side.piece.color == @current_turn
+      attacking_pawns << right_side.piece
+    end
+    attacking_pawns
+  end
+
   # return a piece that is in range of that move
   def find_pieces_in_range(piece_type, target_position_pair)
     pieces_in_range = []
@@ -293,8 +336,8 @@ class Board
   end
 
   def setup_pieces
-    # setup_pawns("White")
-    # setup_pawns("Black")
+    setup_pawns("White")
+    setup_pawns("Black")
     setup_rooks("White")
     setup_rooks("Black")
     setup_knights("White")
@@ -330,12 +373,12 @@ class Board
     !(0..7).include?(row) || !(0..7).include?(column)
   end
 
+  require "pry-byebug"
+
   def save_board
     if @new_game
-      puts "New game, creating save..."
       create_save(@board)
       @save_number = Serializer.get_save_amount
-      puts "Done! Created save #{save_number}."
       @new_game = false
     else
       update_save(@board, @save_number)

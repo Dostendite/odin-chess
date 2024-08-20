@@ -67,8 +67,6 @@ module Serializer
 
   private
 
-  require "pry-byebug"
-
   def get_new_save_path
     new_save_number = get_missing_save_number
     SAVE_DIRECTORY + SAVE_NAME + new_save_number.to_s

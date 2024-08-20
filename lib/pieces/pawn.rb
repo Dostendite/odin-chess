@@ -14,12 +14,4 @@ class Pawn < Piece
     @symbol = "P"
     @can_double_jump = true
   end
-
-  def get_pawn_range
-    if @can_double_jump
-      2
-    else
-      1
-    end
-  end
 end
