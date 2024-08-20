@@ -16,11 +16,11 @@ class Knight < Piece
     recipe = [1, 2, -1, -2]
     moves = []
 
-    recipe.each do |num|
-      recipe.each do |ber|
-        next if num.abs == ber.abs
+    recipe.each do |number|
+      recipe.each do |other|
+        next if number.abs == other.abs
 
-        moves << [num, ber]
+        moves << [number, other]
       end
     end
     moves

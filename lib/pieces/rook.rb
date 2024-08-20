@@ -5,17 +5,12 @@ require_relative "piece.rb"
 # -- and vertical axes
 class Rook < Piece
   attr_accessor :can_castle
-  attr_reader :horizontal_range, :vertical_forward_range,
-  :vertical_backward_range, :diagonal_forward_range, :diagonal_backward_range
+  attr_reader :axes
 
   def initialize(color, position)
     super(color, position)
     @symbol = "R"
     @can_castle = true
-    @horizontal_range = 7
-    @vertical_forward_range  = 7
-    @vertical_backward_range = 7
-    @diagonal_forward_range  = 0
-    @diagonal_backward_range = 0
+    @axes = { x: 7, y: 7, d: 0 }
   end
 end
