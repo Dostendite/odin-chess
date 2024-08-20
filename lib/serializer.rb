@@ -42,11 +42,13 @@ module Serializer
   end
 
   def get_missing_save_number
+    return 1 if @@save_numbers.empty?
+
     @@save_numbers.each_index do |idx|
       return if @@save_numbers.length == (idx - 1)
       return 1 unless @@save_numbers.include?(1)
+
       next if (@@save_numbers[idx] + 1) == @@save_numbers[idx + 1]
-  
       return (@@save_numbers[idx] + 1)
     end
   end
@@ -64,6 +66,8 @@ module Serializer
   end
 
   private
+
+  require "pry-byebug"
 
   def get_new_save_path
     new_save_number = get_missing_save_number
