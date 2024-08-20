@@ -25,19 +25,18 @@ module MoveValidator
     process_move(move_algebraic)
   end
 
-  require "pry-byebug"
   def process_move(move_algebraic)
     target_piece_type = @@board.find_piece_class(move_algebraic[0].upcase)
     target_position_pair = translate_to_pair(move_algebraic[-2..])
-
     pieces_in_range = @@board.find_pieces_in_range(target_piece_type, target_position_pair)
-    play_move("move not valid") if pieces_in_range.length < 1
+    
+    play_move("move not valid") if pieces_in_range.length < 1 
 
     if pieces_in_range.length > 1
       display_board(@@board.board)
       piece_to_move = prompt_piece_to_move(pieces_in_range)
       @@board.move_piece(pieces_in_range[piece_to_move], target_position_pair)
-    else
+    elsif pieces_in_range.length == 1
       @@board.move_piece(pieces_in_range[0], target_position_pair)
     end
   end
@@ -46,7 +45,7 @@ module MoveValidator
     print_board(@@board.board)
     display_multiple_move_prompt(pieces_in_range)
     multiple_move_prompt = gets.chomp.to_i
-    multiple_move_prompt = validate_multiple_move_prompt(multiple_move_prompt)
+    multiple_move_prompt = validate_multiple_move_prompt(multiple_move_prompt - 1)
   end
 
   def validate_multiple_move_prompt(multiple_move_prompt)

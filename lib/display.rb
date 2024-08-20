@@ -1,3 +1,6 @@
+require_relative "serializer"
+require_relative "move_validator"
+
 # display module
 # -- job is to display the main menu, as well as
 # -- the chess game and its messages
@@ -161,7 +164,8 @@ module Display
   def display_multiple_move_prompt(pieces_in_range)
     puts "Found #{pieces_in_range.length} in range."
     pieces_in_range.each_with_index do |piece, idx|
-      puts "#{idx} -> #{piece.class} at #{piece.position}"
+      position_algebraic = translate_to_algebraic(piece.position[0], piece.position[1])
+      puts "#{idx + 1} -> #{piece.class} at #{position_algebraic}"
     end
     puts "Please input the index of the piece you want to move..."
   end
