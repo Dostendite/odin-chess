@@ -1,3 +1,5 @@
+require "pry-byebug"
+
 SAVE_NAME = "chess_save_"
 SAVE_DIRECTORY = "./saves/"
 
@@ -45,7 +47,7 @@ module Serializer
     return 1 if @@save_numbers.empty?
 
     @@save_numbers.each_index do |idx|
-      return if @@save_numbers.length == (idx - 1)
+      # return if @@save_numbers.length == (idx - 1)
       return 1 unless @@save_numbers.include?(1)
 
       next if (@@save_numbers[idx] + 1) == @@save_numbers[idx + 1]
