@@ -6,7 +6,7 @@ require_relative "piece.rb"
 class King < Piece
   attr_accessor :can_castle, :in_check
   attr_reader :horizontal_range, :vertical_forward_range,
-  :vertical_backward_range, :diagonal_forward_range, :diagonal_backward_rang
+  :vertical_backward_range, :diagonal_forward_range, :diagonal_backward_range
 
   def initialize(color, position)
     super(color, position)
