@@ -99,6 +99,22 @@ class Board
     squares_in_range
   end
 
+  require "pry-byebug"
+
+  def find_knight_squares(piece)
+    # binding.pry
+    knight_squares = []
+    knight_row, knight_column = piece.position
+    piece.knight_moves.each do |knight_move|
+      row_delta, column_delta = knight_move
+      potential_position = [knight_row + row_delta, knight_column + column_delta]
+      next if move_out_of_bounds?(potential_position)
+
+      knight_squares << @board[knight_row + row_delta][knight_column + column_delta]
+    end
+    knight_squares
+  end
+
   def find_horizontal_squares(piece)
     return [] if piece.horizontal_range == 0
   
@@ -148,8 +164,6 @@ class Board
     diagonal_squares += find_diagonal_forward_squares(piece)
     diagonal_squares += find_diagonal_backward_squares(piece)
   end
-
-  require "pry-byebug"
 
   def find_diagonal_forward_squares(piece)
     return if piece.diagonal_forward_range == 0
@@ -283,12 +297,12 @@ class Board
     # setup_pawns("Black")
     setup_rooks("White")
     setup_rooks("Black")
-    # setup_knights("White")
-    # setup_knights("Black")
+    setup_knights("White")
+    setup_knights("Black")
     setup_bishops("White")
     setup_bishops("Black")
-    # setup_royalty("White")
-    # setup_royalty("Black")
+    setup_royalty("White")
+    setup_royalty("Black")
   end
   
   def swap_players
