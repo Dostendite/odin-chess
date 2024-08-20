@@ -2,47 +2,42 @@ require_relative "display"
 
 module MoveValidator
   include Display
-  @@board = nil
-
-  def self.update_board(board)
-    @@board = board
-  end
-
-  def self.export_board
-    @@board
-  end
-
   # Chain Structure
   # -- returns true if the move is valid and allows it,
   # -- else it displays and error ("move not valid"), ("under check"), etc
   # if an error bubbles up, restart & display the error once
   # else, allow the move
-  
-  def play_move(msg_type = 0)
-    display_board(@@board.board, msg_type)
-    display_move_prompt(@@board.current_turn)
-    move_algebraic = prompt_for_move
-    process_move(move_algebraic)
+  def make_move(board, msg_type = 0)
+    display_board(board.board, msg_type)
+    display_move_prompt(board.current_turn)
+    move = prompt_for_move
+    process_move(board, move)
   end
 
-  def process_move(move_algebraic)
-    target_piece_type = @@board.find_piece_class(move_algebraic[0].upcase)
-    target_position_pair = translate_to_pair(move_algebraic[-2..])
-    pieces_in_range = @@board.find_pieces_in_range(target_piece_type, target_position_pair)
+  def process_move(board, move)
+    return "menu" if move.include?("main") || move.include?("menu")
     
-    play_move("move not valid") if pieces_in_range.length < 1 
+    process_move_algebraic(board, move)
+  end
+
+  def process_move_algebraic(board, move_algebraic)
+    target_piece_type = board.find_piece_class(move_algebraic[0].upcase)
+    target_position_pair = translate_to_pair(move_algebraic[-2..])
+    pieces_in_range = board.find_pieces_in_range(target_piece_type, target_position_pair)
+    
+    make_move(board, "move not valid") if pieces_in_range.length < 1 
 
     if pieces_in_range.length > 1
-      display_board(@@board.board)
-      piece_to_move = prompt_piece_to_move(pieces_in_range)
-      @@board.move_piece(pieces_in_range[piece_to_move], target_position_pair)
+      display_board(board.board)
+      piece_to_move = prompt_piece_to_move(board, pieces_in_range)
+      board.move_piece(pieces_in_range[piece_to_move], target_position_pair)
     elsif pieces_in_range.length == 1
-      @@board.move_piece(pieces_in_range[0], target_position_pair)
+      board.move_piece(pieces_in_range[0], target_position_pair)
     end
   end
 
-  def prompt_piece_to_move(pieces_in_range)
-    print_board(@@board.board)
+  def prompt_piece_to_move(board, pieces_in_range)
+    print_board(board.board)
     display_multiple_move_prompt(pieces_in_range)
     multiple_move_prompt = gets.chomp.to_i
     multiple_move_prompt = validate_multiple_move_prompt(multiple_move_prompt - 1)
