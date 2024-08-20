@@ -88,10 +88,11 @@ class Board
   end
 
   def find_squares_in_range(piece)
+    squares_in_range = []
     if piece.instance_of?(Knight)
-      squares_in_range = find_knight_squares(piece)
+      squares_in_range += find_knight_squares(piece)
     else
-      squares_in_range = find_horizontal_squares(piece)
+      squares_in_range += find_horizontal_squares(piece)
       squares_in_range += find_vertical_squares(piece)
       squares_in_range += find_diagonal_squares(piece)
     end
@@ -99,11 +100,13 @@ class Board
   end
 
   def find_horizontal_squares(piece)
+    return [] if piece.horizontal_range == 0
+  
     horizontal_squares = []
     piece_row, piece_column = piece.position
     (1..piece.horizontal_range).each do |column_delta|
       next if move_out_of_bounds?([piece_row, piece_column + column_delta])
-
+      
       horizontal_squares << @board[piece_row][piece_column + column_delta]
     end
 
@@ -116,6 +119,9 @@ class Board
   end
 
   def find_vertical_squares(piece)
+    return [] if piece.vertical_forward_range == 0
+    return [] if piece.vertical_backward_range == 0
+
     vertical_squares = []
     piece_row, piece_column = piece.position
     (1..piece.vertical_forward_range).each do |row_delta|
@@ -135,7 +141,52 @@ class Board
   end
 
   def find_diagonal_squares(piece)
+    return [] if piece.diagonal_forward_range == 0
+    return [] if piece.diagonal_backward_range == 0
+
     diagonal_squares = []
+    diagonal_squares += find_diagonal_forward_squares(piece)
+    diagonal_squares += find_diagonal_backward_squares(piece)
+  end
+
+  require "pry-byebug"
+
+  def find_diagonal_forward_squares(piece)
+    return if piece.diagonal_forward_range == 0
+
+    diagonal_forward_squares = []
+    piece_row, piece_column = piece.position
+    (1..piece.diagonal_forward_range).each do |delta|
+      next if move_out_of_bounds?([piece_row + delta, piece_column + delta])
+
+      diagonal_forward_squares << @board[piece_row + delta][piece_column + delta]
+    end
+
+    (1..piece.diagonal_forward_range).each do |delta|
+      next if move_out_of_bounds?([piece_row + delta, piece_column - delta])
+
+      diagonal_forward_squares << @board[piece_row + delta][piece_column - delta]
+    end
+    diagonal_forward_squares
+  end
+
+  def find_diagonal_backward_squares(piece)
+    return if piece.diagonal_backward_range == 0
+
+    diagonal_backward_squares = []
+    piece_row, piece_column = piece.position
+    (1..piece.diagonal_backward_range).each do |delta|
+      next if move_out_of_bounds?([piece_row - delta, piece_column + delta])
+
+      diagonal_backward_squares << @board[piece_row - delta][piece_column + delta]
+    end
+
+    (1..piece.diagonal_backward_range).each do |delta|
+      next if move_out_of_bounds?([piece_row - delta, piece_column - delta])
+
+      diagonal_backward_squares << @board[piece_row - delta][piece_column - delta]
+    end
+    diagonal_backward_squares
   end
 
   def load_board(save_number)
@@ -228,16 +279,16 @@ class Board
   end
 
   def setup_pieces
-    setup_pawns("White")
-    setup_pawns("Black")
+    # setup_pawns("White")
+    # setup_pawns("Black")
     setup_rooks("White")
     setup_rooks("Black")
-    setup_knights("White")
-    setup_knights("Black")
+    # setup_knights("White")
+    # setup_knights("Black")
     setup_bishops("White")
     setup_bishops("Black")
-    setup_royalty("White")
-    setup_royalty("Black")
+    # setup_royalty("White")
+    # setup_royalty("Black")
   end
   
   def swap_players
