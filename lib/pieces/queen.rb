@@ -8,7 +8,7 @@ class Queen < Piece
 
   def initialize(color, position)
     super(color, position)
-    @symbol = "Q"
+    @symbol = "♛♕"
     @axes = { x: 7, y: 7, d: 7 }
   end
 end

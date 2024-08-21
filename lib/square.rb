@@ -28,7 +28,11 @@ class Square
     if empty?
       "  "
     else
-      "#{@piece.symbol}#{@piece.color[0].downcase}" 
+      if @piece.black?
+        "#{@piece} "
+      else
+        " #{@piece}"
+      end
     end
   end
 

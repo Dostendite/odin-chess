@@ -8,7 +8,7 @@ class Knight < Piece
 
   def initialize(color, position)
     super(color, position)
-    @symbol = "K"
+    @symbol = "♞♘"
     @knight_moves = generate_knight_moves
   end
 

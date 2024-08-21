@@ -12,6 +12,10 @@ class Piece
     @position = position
   end
 
+  def to_s
+    black? ? @symbol[0] : @symbol[1]
+  end
+
   def black?
     @color == "Black"
   end
@@ -26,7 +30,7 @@ class Piece
 
   def get_valid_squares(board)
     valid_squares = []
-  
+    
     if !@axes[:x].nil?
       valid_squares += calculate_squares_x(board, @axes[:x])
       valid_squares += calculate_squares_x(board, -@axes[:x])

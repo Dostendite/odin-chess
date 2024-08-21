@@ -10,6 +10,10 @@ module Serializer
   @@save_capacity = 8
   @@save_numbers = []
 
+  def self.max_saves?
+    @@save_numbers.length == 8
+  end
+
   def self.get_save_amount
     @@save_numbers.length
   end
@@ -28,7 +32,9 @@ module Serializer
 
   def create_save(unserialized_board)
     serialized_board = serialize_board(unserialized_board)
-    File.write(get_new_save_path, serialized_board)
+    new_save_path = get_new_save_path
+    File.write(new_save_path, serialized_board)
+    new_save_path[-1]
   end
 
   def load_save(save_number)

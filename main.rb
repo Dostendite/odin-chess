@@ -3,6 +3,7 @@ require_relative "lib/board"
 require_relative "lib/square"
 require_relative "lib/display"
 require_relative "lib/serializer"
+require_relative "lib/move_validator"
 
 require_relative "lib/pieces/piece.rb"
 require_relative "lib/pieces/pawn.rb"
@@ -16,5 +17,7 @@ require_relative "lib/pieces/king.rb"
 # and bin/rspec for tests
 
 chess = Chess.new
-chess.introduce_player
-chess.play_menu
+chess.play_chess
+
+# board = Board.new
+# board.create_new_board

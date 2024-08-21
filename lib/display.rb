@@ -7,16 +7,15 @@ require_relative "move_validator"
 module Display
   include Serializer
 
-  def print_board(board, msg_type = 0)
-    display_board(board, msg_type)
+  def print_board(board, board_message = 0)
+    display_board(board, board_message)
   end
 
   def display_introduction
     clear_screen
     introduction = <<~HEREDOC
     Hello! Welcome to my very first game of Chess!
-    This is the capstone project for 
-    The Odin Project's Ruby course.
+    This is the capstone project for The Odin Project's Ruby course.
     HEREDOC
 
     print_skyblue(introduction)
@@ -56,10 +55,12 @@ module Display
       display_delete_prompt
     when 3 # max saves
       display_max_saves_message
+    when 4
+      display_main_menu_error
     end
   end
 
-  def display_board(board, msg_type = 0)
+  def display_board(board, board_message = 0)
     clear_screen
     board.reverse.each_with_index do |row, index|
       row.each do |square|
@@ -72,11 +73,11 @@ module Display
     end
     puts Rainbow("  a b c d e f g h ").bright
 
-    display_extra_board_message(msg_type) unless msg_type == 0
+    display_extra_board_message(board_message) unless board_message == 0
   end
 
-  def display_extra_board_message(msg_type = 0)
-    case msg_type
+  def display_extra_board_message(board_message = 0)
+    case board_message
     when "move not valid"
       display_move_not_valid_message
     when "illegal"
@@ -98,6 +99,10 @@ module Display
     puts "the main menu at any time by typing in 'main menu'!"
     puts "Have fun :D"
     display_continue_prompt
+  end
+
+  def display_main_menu_error
+    puts "Please enter 'new', 'delete', or 'load'!"
   end
 
   def display_move_not_valid_message
@@ -161,7 +166,7 @@ module Display
     puts "Input save number to delete..."
   end
 
-  def display_multiple_move_prompt(pieces_in_range)
+  def display_multiple_move_choice(pieces_in_range)
     puts "Found #{pieces_in_range.length} in range."
     pieces_in_range.each_with_index do |piece, idx|
       position_algebraic = translate_to_algebraic(piece.position[0], piece.position[1])

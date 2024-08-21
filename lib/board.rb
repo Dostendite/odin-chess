@@ -1,3 +1,5 @@
+require "pry-byebug"
+
 require_relative "square"
 require_relative "serializer"
 require_relative "move_validator"
@@ -52,8 +54,17 @@ class Board
     board
   end
 
-  # METHODS THAT WORK WITH MOVE VALIDATOR
-  require "pry-byebug"
+  def valid_square?(piece, square)
+    piece.get_valid_squares(@board).include?(square)
+  end
+
+  def find_valid_squares(piece)
+    if piece.instance_of?(Knight)
+      find_knight_squares(piece)
+    else
+      piece.get_valid_squares(@board)
+    end
+  end
 
   def find_pawn_below(target_position_pair, increment)
     target_row, target_column = target_position_pair
@@ -102,9 +113,10 @@ class Board
   def find_pieces_in_range(piece_type, target_position_pair)
     pieces_in_range = []
     available_pieces = find_available_pieces(piece_type)
-    
+
     available_pieces.each do |piece|
-      squares_in_range = find_squares_in_range(piece)
+      squares_in_range = find_valid_squares(piece)
+      # put this into its own method tbh
       squares_in_range.each do |square|
         square_position_pair = translate_to_pair(square.coordinate)
         if square_position_pair == target_position_pair
@@ -142,10 +154,7 @@ class Board
     squares_in_range
   end
 
-  require "pry-byebug"
-
   def find_knight_squares(piece)
-    # binding.pry
     knight_squares = []
     knight_row, knight_column = piece.position
     piece.knight_moves.each do |knight_move|
@@ -156,94 +165,6 @@ class Board
       knight_squares << @board[knight_row + row_delta][knight_column + column_delta]
     end
     knight_squares
-  end
-
-  def find_horizontal_squares(piece)
-    return [] if piece.horizontal_range == 0
-  
-    horizontal_squares = []
-    piece_row, piece_column = piece.position
-    (1..piece.horizontal_range).each do |column_delta|
-      next if move_out_of_bounds?([piece_row, piece_column + column_delta])
-      
-      horizontal_squares << @board[piece_row][piece_column + column_delta]
-    end
-
-    (1..piece.horizontal_range).each do |column_delta|
-      next if move_out_of_bounds?([piece_row, piece_column - column_delta]) 
-      
-      horizontal_squares << @board[piece_row][piece_column - column_delta]
-    end
-    horizontal_squares
-  end
-
-  def find_vertical_squares(piece)
-    return [] if piece.vertical_forward_range == 0
-    return [] if piece.vertical_backward_range == 0
-
-    vertical_squares = []
-    piece_row, piece_column = piece.position
-    (1..piece.vertical_forward_range).each do |row_delta|
-      next if move_out_of_bounds?([piece_row + row_delta, piece_column])
-
-      forward_square = @board[piece_row + row_delta][piece_column]
-      vertical_squares << forward_square
-    end
-
-    (1..piece.vertical_backward_range).each do |row_delta|
-      next if move_out_of_bounds?([piece_row - row_delta, piece_column])
-
-      backward_square = @board[piece_row - row_delta][piece_column]
-      vertical_squares << backward_square
-    end
-    vertical_squares
-  end
-
-  def find_diagonal_squares(piece)
-    return [] if piece.diagonal_forward_range == 0
-    return [] if piece.diagonal_backward_range == 0
-
-    diagonal_squares = []
-    diagonal_squares += find_diagonal_forward_squares(piece)
-    diagonal_squares += find_diagonal_backward_squares(piece)
-  end
-
-  def find_diagonal_forward_squares(piece)
-    return if piece.diagonal_forward_range == 0
-
-    diagonal_forward_squares = []
-    piece_row, piece_column = piece.position
-    (1..piece.diagonal_forward_range).each do |delta|
-      next if move_out_of_bounds?([piece_row + delta, piece_column + delta])
-
-      diagonal_forward_squares << @board[piece_row + delta][piece_column + delta]
-    end
-
-    (1..piece.diagonal_forward_range).each do |delta|
-      next if move_out_of_bounds?([piece_row + delta, piece_column - delta])
-
-      diagonal_forward_squares << @board[piece_row + delta][piece_column - delta]
-    end
-    diagonal_forward_squares
-  end
-
-  def find_diagonal_backward_squares(piece)
-    return if piece.diagonal_backward_range == 0
-
-    diagonal_backward_squares = []
-    piece_row, piece_column = piece.position
-    (1..piece.diagonal_backward_range).each do |delta|
-      next if move_out_of_bounds?([piece_row - delta, piece_column + delta])
-
-      diagonal_backward_squares << @board[piece_row - delta][piece_column + delta]
-    end
-
-    (1..piece.diagonal_backward_range).each do |delta|
-      next if move_out_of_bounds?([piece_row - delta, piece_column - delta])
-
-      diagonal_backward_squares << @board[piece_row - delta][piece_column - delta]
-    end
-    diagonal_backward_squares
   end
 
   def load_board(save_number)
@@ -373,12 +294,10 @@ class Board
     !(0..7).include?(row) || !(0..7).include?(column)
   end
 
-  require "pry-byebug"
-
   def save_board
     if @new_game
-      create_save(@board)
-      @save_number = Serializer.get_save_amount
+      @save_number = create_save(@board)
+      Serializer.update_save_numbers
       @new_game = false
     else
       update_save(@board, @save_number)

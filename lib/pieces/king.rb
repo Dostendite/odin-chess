@@ -9,7 +9,7 @@ class King < Piece
 
   def initialize(color, position)
     super(color, position)
-    @symbol = "K"
+    @symbol = "♚♔"
     @can_castle = true
     @in_check = false
     @axes = { x: 1, y: 1, d: 1 }

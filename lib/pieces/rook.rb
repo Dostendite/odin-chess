@@ -9,7 +9,7 @@ class Rook < Piece
 
   def initialize(color, position)
     super(color, position)
-    @symbol = "R"
+    @symbol = "♜♖"
     @can_castle = true
     @axes = { x: 7, y: 7, d: 0 }
   end

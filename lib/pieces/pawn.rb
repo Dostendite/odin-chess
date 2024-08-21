@@ -11,7 +11,11 @@ class Pawn < Piece
 
   def initialize(color, position)
     super(color, position)
-    @symbol = "P"
+    @symbol = "♟♙"
     @can_double_jump = true
+  end
+
+  def to_s
+    black? ? @symbol[0] : @symbol[1]
   end
 end
