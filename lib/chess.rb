@@ -54,7 +54,7 @@ class Chess
 
   def start_new_game
     @chess_board = Board.new
-    @chess_board.create_new_board
+    @chess_board.board = @chess_board.generate_board
     @chess_board.setup_pieces
     @chess_board.save_board
   end
@@ -75,37 +75,24 @@ class Chess
   # main game loop - add stalemate, en passant & checkmate
   def play_game
     until @game_over
-      piece, move = prompt_move
+      piece, move_pair = prompt_move
       show_main_menu if prompt_move.include?("main")
-      make_move(piece, move)
+      make_move(piece, move_pair)
       @chess_board.swap_players
       @chess_board.save_board
     end
     display_final_message
   end
 
-  def make_move(piece, move)
-    move = translate_to_pair(move) if move.instance_of?(String)
-    @chess_board.move_piece(piece, move)
+  def make_move(piece, move_pair)
+    @chess_board.move_piece(piece, move_pair)
   end
 
-  def process_pawn_moves(move)
-    pawn_choices = generate_pawn_choices(move)
-    if pawn_choices.length == 1
-      pawn_choices[0]
+  def generate_piece_choices(move)
+    if move.length == 2
+      generate_pawn_choices(move)
     else
-      prompt_multiple_move_choices(pawn_choices)
-    end
-  end
-
-  def process_pieces_in_range(pieces_in_range, move)
-    piece_choices = pieces_in_range
-    if piece_choices.length > 1
-      prompt_multiple_move_choices(piece_choices)
-    elsif piece_choices.length == 1
-      piece_choices[0]
-    else
-      nil
+      generate_pieces_in_range(@chess_board, move)
     end
   end
 
@@ -113,13 +100,15 @@ class Chess
     move = receive_move_prompt(board_message)
     return "main", nil if move == "main" || move == "menu"
 
-    if move.length == 2
-      return process_pawn_moves(move), move[-2..]
+    piece_choices = generate_piece_choices(move)
+
+    if piece_choices.length > 1
+      piece_choice = prompt_multiple_move_choices(piece_choices)
     else
-      pieces_in_range = generate_pieces_in_range(@chess_board, move)
-      piece_choice = process_pieces_in_range(pieces_in_range, move)
-      return piece_choice, move[-2..]
+      piece_choice = piece_choices
     end
+
+    return piece_choice, move[-2..]
   end
 
   def target_square_friendly?(target_square)
@@ -199,7 +188,7 @@ class Chess
     elsif move.length > 2
       target_piece_type = @chess_board.find_piece_class(move[0].upcase)
       return nil if target_piece_type.nil?
-    elsif @chess_board.move_out_of_bounds?(translate_to_pair(move[-2..]))
+    elsif move_out_of_bounds?(translate_to_pair(move[-2..]))
      return nil
     else
       move
