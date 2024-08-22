@@ -33,7 +33,7 @@ class Chess
 
   def play_chess
     introduce_player
-    show_main_menu
+    show_reminder
     play_game
   end
   
@@ -42,21 +42,18 @@ class Chess
     display_introduction
   end
 
-  def show_main_menu
-    @chess_board.save_board unless @chess_board.nil?
-    unless @displayed_reminder
-      display_main_menu_reminder
-      @displayed_reminder = true
-    end
-    main_menu_choice = receive_main_menu_choice
-    process_main_menu_choice(main_menu_choice)
-  end
-
   def start_new_game
     @chess_board = Board.new
     @chess_board.board = @chess_board.generate_board
     @chess_board.setup_pieces
     @chess_board.save_board
+  end
+
+  def show_reminder
+    unless @displayed_reminder
+      display_main_menu_reminder
+      @displayed_reminder = true
+    end
   end
 
   # -------- CHESS --------
@@ -74,14 +71,49 @@ class Chess
 
   # main game loop - add stalemate, en passant & checkmate
   def play_game
-    until @game_over
-      piece, move_pair = prompt_move
-      show_main_menu if prompt_move.include?("main")
-      make_move(piece, move_pair)
-      @chess_board.swap_players
-      @chess_board.save_board
+    loop do
+      menu_prompt = show_main_menu
+      next unless %W(new load).include?(menu_prompt)
+
+      until @game_over
+        piece, move_pair = prompt_move
+
+        if move_pair == "main menu"
+          @chess_board.save_board
+          break
+        end
+
+        make_move(piece, move_pair)
+        next_turn
+      end
     end
     display_final_message
+  end
+
+  def show_main_menu
+    main_menu_choice = receive_main_menu_choice
+    process_main_menu_choice(main_menu_choice)
+  end
+
+  def process_main_menu_choice(main_menu_choice)
+    case main_menu_choice
+    when "new"
+      start_new_game
+      return "new"
+    when "delete"
+      display_main_menu(2)
+      delete_save(receive_delete_choice)
+      Serializer.update_save_numbers
+    when "load"
+      display_main_menu(1)
+      load_game(receive_load_choice)
+      return "load"
+    end
+  end
+
+  def next_turn
+    @chess_board.swap_players
+    @chess_board.save_board
   end
 
   def make_move(piece, move_pair)
@@ -98,7 +130,7 @@ class Chess
 
   def prompt_move(board_message = 0)
     move = receive_move_prompt(board_message)
-    return "main", nil if move == "main" || move == "menu"
+    return nil, "main menu" if move == "main menu"
 
     piece_choices = generate_piece_choices(move)
 
@@ -111,16 +143,15 @@ class Chess
     return piece_choice, move[-2..]
   end
 
+  # move these to the validator
   def target_square_friendly?(target_square)
     if !target_square.empty?
-      # not valid if piece is friendly
       target_square.piece.color == @chess_board.current_turn
     end
   end
 
   def target_square_unfriendly?(target_square)
     if !target_square.empty?
-      # not valid if piece is friendly
       target_square.piece.color != @chess_board.current_turn
     end
   end
@@ -165,18 +196,13 @@ class Chess
     @chess_board = Board.new
     @chess_board.load_board(save_number)
   end
-  
-  def prompt_delete_choice
-    display_main_menu(2)
-    receive_delete_choice
-  end
 
   def receive_move_prompt(board_message)
     loop do
       display_board(@chess_board.board, board_message)
       display_move_prompt(@chess_board.current_turn)
       move = gets.chomp
-      return "main" if move == "main"
+      return "main menu" if %W(main menu).include?(move)
       
       return validate_move(move) unless validate_move(move).nil?
     end
@@ -208,20 +234,6 @@ class Chess
     end
   end
 
-  def process_main_menu_choice(main_menu_choice)
-    case main_menu_choice
-    when "new"
-      start_new_game
-    when "delete"
-      delete_save(prompt_delete_choice)
-      Serializer.update_save_numbers
-    when "load"
-      display_main_menu(1)
-      load_game(receive_load_choice)
-    end
-  end
-
-  # them (better input validation & regex?)
   def receive_main_menu_choice
     message_id = 0
     loop do
@@ -229,13 +241,11 @@ class Chess
       menu_choice = gets.strip.downcase
       if menu_choice == "new" && Serializer.max_saves?
         message_id = 3
-        next
+      elsif %W(new load delete).include?(menu_choice)
+        return menu_choice 
+      else
+        message_id = 4
       end
-
-      return menu_choice if %W(new load delete).include?(menu_choice)
-  
-      message_id = 4
-      next
     end
   end
 
@@ -254,13 +264,10 @@ class Chess
     save_numbers = Serializer.get_save_numbers
     loop do
       delete_choice = gets.to_i
-      if save_numbers.include?(delete_choice)
-        return delete_choice
-      else
-        display_main_menu
-        puts "Please input a valid save number to delete!"
-      end
+      return delete_choice if save_numbers.include?(delete_choice)
+  
+      display_main_menu
+      puts "Please input a valid save number to delete!"
     end
   end
 end
-
