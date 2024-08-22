@@ -30,12 +30,8 @@ class Board
     @new_game = true
     @save_number = nil
     @en_passant_pawn_square = nil # last pawn to do en passant (to remove)
-    @piece_types = {"N" => Knight, "B" => Bishop, "R" => Rook, 
-                    "Q" => Queen, "K" => King}
-  end
-
-  def create_new_board
-    @board = generate_board
+    @piece_types = { "N" => Knight, "B" => Bishop, "R" => Rook, 
+                    "Q" => Queen, "K" => King }
   end
   
   def generate_board(board = [])
@@ -167,19 +163,13 @@ class Board
     knight_squares
   end
 
-  def load_board(save_number)
-    @board = load_save(save_number)
-    @save_number = Serializer.get_save_amount
-    @new_game = false
-  end
-
   def move_piece(piece, target_position_pair)
     remove_piece(piece.position)
     piece.position = target_position_pair
-    add_piece(piece.position, piece)
+    add_piece(piece, piece.position)
   end
 
-  def add_piece(position_pair, piece)
+  def add_piece(piece, position_pair)
     row, column = position_pair
     target_square = @board[row][column]
     target_square.piece = piece
@@ -196,12 +186,12 @@ class Board
   end
 
   def find_piece_class(piece_type)
-    @piece_types[piece_type]
+    @piece_types[piece_type.upcase]
   end
 
   # Optimize: All setup methods
   def create_piece(type, color, position)
-    return type.new(color, position)
+    type.new(color, position)
   end
 
   def find_color_file(color)
@@ -282,7 +272,7 @@ class Board
   end
 
   def can_promote?(pawn)
-    if pawn.color == "white"
+    if pawn.color == "White"
       pawn.position[1] == 7
     else
       pawn.position[1] == 0
@@ -302,6 +292,12 @@ class Board
     else
       update_save(@board, @save_number)
     end
+  end
+
+  def load_board(save_number)
+    @board = load_save(save_number)
+    @save_number = Serializer.get_save_amount
+    @new_game = false
   end
 end
 
