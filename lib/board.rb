@@ -22,7 +22,7 @@ ORD_BASE = 97
 class Board
   include Serializer
   include MoveValidator
-  attr_accessor :board, :current_turn, :save_number
+  attr_accessor :board, :current_turn, :save_number, :new_game
 
   def initialize(board = nil)
     @board = nil
@@ -50,117 +50,60 @@ class Board
     board
   end
 
+  def king_moved?(color)
+    row = color == "White" ? 0 : 7
+    
+    if !@board[row][4].empty?
+      @board[row][4].piece.moved == true
+    end
+  end
+
+  # def move_piece(piece, target_position_pair)
+  #   remove_piece(piece.position)
+  #   piece.position = target_position_pair
+  #   add_piece(piece, piece.position)
+  # end
+
+  def castle_short(current_turn = @current_turn)
+    # binding.pry
+    row = current_turn == "White" ? 0 : 7
+    king = @board[row][4].piece
+    rook = @board[row][7].piece
+
+    king.moved = true
+    rook.moved = true
+
+    move_piece(king, [row, 6])
+    move_piece(rook, [row, 5])
+  end
+
+  def castle_long(current_turn = @current_turn)
+    # binding.pry
+    row = current_turn == "White" ? 0 : 7
+    king = @board[row][4].piece
+    rook = @board[row][0].piece
+
+    king.moved = true
+    rook.moved = true
+
+    move_piece(king, [row, 2])
+    move_piece(rook, [row, 3])
+  end
+
+  def castle_available?(color = @current_turn, length)
+    return false if king_moved?(color)
+    
+    row = color == "White" ? 0 : 7
+    column = length == "short" ? 7 : 0
+
+    rook_square = @board[row][column]
+    if !rook_square.empty?
+      return rook_square.piece.moved == false
+    end
+  end
+
   def valid_square?(piece, square)
     piece.get_valid_squares(@board).include?(square)
-  end
-
-  def find_valid_squares(piece)
-    if piece.instance_of?(Knight)
-      find_knight_squares(piece)
-    else
-      piece.get_valid_squares(@board)
-    end
-  end
-
-  def find_pawn_below(target_position_pair, increment)
-    target_row, target_column = target_position_pair
-
-    # could use this to refactor the huge methods below
-    delta = @current_turn == "Black" ? increment : -increment
-    square_below = @board[target_row + delta][target_column]
-    validate_pawn_below(square_below, increment)
-  end
-
-  def validate_pawn_below(square_below, increment)
-    if !square_below.empty? && square_below.piece.instance_of?(Pawn)
-      if increment == 2 && square_below.piece.can_double_jump == false
-        return nil
-      end
-      square_below.piece.can_double_jump = false
-      square_below.piece
-    end
-  end
-
-  def find_attacking_pawns(target_position_pair)
-    attacking_pawns = []
-    target_row, target_column = target_position_pair
-
-    if @current_turn == "Black"
-      left_side = @board[target_row + 1][target_column - 1]
-      right_side = @board[target_row + 1][target_column + 1]
-    else
-      left_side = @board[target_row - 1][target_column - 1]
-      right_side = @board[target_row - 1][target_column + 1]
-    end
-
-    if !left_side.empty? && left_side.piece.instance_of?(Pawn) &&
-      left_side.piece.color == @current_turn
-      attacking_pawns << left_side.piece
-    end
-
-    if !right_side.empty? && right_side.piece.instance_of?(Pawn) &&
-      right_side.piece.color == @current_turn
-      attacking_pawns << right_side.piece
-    end
-    attacking_pawns
-  end
-
-  # return a piece that is in range of that move
-  def find_pieces_in_range(piece_type, target_position_pair)
-    pieces_in_range = []
-    available_pieces = find_available_pieces(piece_type)
-
-    available_pieces.each do |piece|
-      squares_in_range = find_valid_squares(piece)
-      # put this into its own method tbh
-      squares_in_range.each do |square|
-        square_position_pair = translate_to_pair(square.coordinate)
-        if square_position_pair == target_position_pair
-          pieces_in_range << piece
-          break
-        end
-      end
-    end
-    pieces_in_range
-  end
-
-  def find_available_pieces(piece_type, color = @current_turn)
-    available_pieces = []
-    @board.each do |row|
-      row.each do |square|
-        next if square.empty?
-
-        if square.piece.color == color && square.piece.instance_of?(piece_type)
-          available_pieces << square.piece
-        end
-      end
-    end
-    available_pieces
-  end
-
-  def find_squares_in_range(piece)
-    squares_in_range = []
-    if piece.instance_of?(Knight)
-      squares_in_range += find_knight_squares(piece)
-    else
-      squares_in_range += find_horizontal_squares(piece)
-      squares_in_range += find_vertical_squares(piece)
-      squares_in_range += find_diagonal_squares(piece)
-    end
-    squares_in_range
-  end
-
-  def find_knight_squares(piece)
-    knight_squares = []
-    knight_row, knight_column = piece.position
-    piece.knight_moves.each do |knight_move|
-      row_delta, column_delta = knight_move
-      potential_position = [knight_row + row_delta, knight_column + column_delta]
-      next if move_out_of_bounds?(potential_position)
-
-      knight_squares << @board[knight_row + row_delta][knight_column + column_delta]
-    end
-    knight_squares
   end
 
   def move_piece(piece, target_position_pair)
@@ -195,22 +138,14 @@ class Board
   end
 
   def find_color_file(color)
-    if color == "Black"
-      7
-    else
-      0
-    end
+    color == "Black" ? 7 : 0
   end
 
   def setup_pawns(color)
-    if color == "Black"
-      file = 6
-    else
-      file = 1
-    end
+    file = color == "Black" ? 6 : 1
     8.times do |rank|
       pawn = create_piece(Pawn, color, [file, rank])
-      add_piece(pawn.position, pawn)
+      add_piece(pawn, pawn.position)
     end
   end
 
@@ -218,32 +153,32 @@ class Board
     file = find_color_file(color)
     rook_left = create_piece(Rook, color, [file, 0])
     rook_right = create_piece(Rook, color, [file, 7])
-    add_piece(rook_left.position, rook_left)
-    add_piece(rook_right.position, rook_right)
+    add_piece(rook_left, rook_left.position)
+    add_piece(rook_right, rook_right.position)
   end
 
   def setup_knights(color)
     file = find_color_file(color)
     knight_left = create_piece(Knight, color, [file, 1])
     knight_right = create_piece(Knight, color, [file, 6])
-    add_piece(knight_left.position, knight_left)
-    add_piece(knight_right.position, knight_right)
+    add_piece(knight_left, knight_left.position)
+    add_piece(knight_right, knight_right.position)
   end
 
   def setup_bishops(color)
     file = find_color_file(color)
     bishop_left = create_piece(Bishop, color, [file, 2])
     bishop_right = create_piece(Bishop, color, [file, 5])
-    add_piece(bishop_left.position, bishop_left)
-    add_piece(bishop_right.position, bishop_right)
+    add_piece(bishop_left, bishop_left.position)
+    add_piece(bishop_right, bishop_right.position)
   end
 
   def setup_royalty(color)
     file = find_color_file(color)
     queen = create_piece(Queen, color, [file, 3])
     king = create_piece(King, color, [file, 4])
-    add_piece(queen.position, queen)
-    add_piece(king.position, king)
+    add_piece(queen, queen.position)
+    add_piece(king, king.position)
   end
 
   def setup_pieces
@@ -262,7 +197,7 @@ class Board
   def swap_players
     if @current_turn == "White"
       @current_turn = "Black"
-    else
+    elsif @current_turn == "Black"
       @current_turn = "White"
     end
   end
@@ -277,27 +212,6 @@ class Board
     else
       pawn.position[1] == 0
     end
-  end
-
-  def move_out_of_bounds?(target_position_pair)
-    row, column = target_position_pair
-    !(0..7).include?(row) || !(0..7).include?(column)
-  end
-
-  def save_board
-    if @new_game
-      @save_number = create_save(@board)
-      Serializer.update_save_numbers
-      @new_game = false
-    else
-      update_save(@board, @save_number)
-    end
-  end
-
-  def load_board(save_number)
-    @board = load_save(save_number)
-    @save_number = Serializer.get_save_amount
-    @new_game = false
   end
 end
 

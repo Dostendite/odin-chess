@@ -84,16 +84,43 @@ class Chess
           break
         end
 
-        mark_pawn_as_moved(piece)
+        if move_pair == "castle"
+          next_turn
+          next
+        end
+
+        mark_piece_as_moved(piece)
         make_move(piece, move_pair)
         next_turn
       end
     end
     display_final_message
   end
+
+  # white
+  # default king pos -> e1
+  # short rook pos -> h1 | long rook pos -> a1
+  # squares that must be intact:
   
-  def mark_pawn_as_moved(piece)
-    if piece.instance_of?(Pawn)
+  # black
+  # default king pos -> e8
+  # short rook pos -> h8 | long rook pos -> a8
+
+  def castle(move)
+    current_turn = @chess_board.current_turn
+    return nil unless @chess_board.castle_available?(current_turn)
+
+    if move.include?("kg")
+      @chess_board.castle_short(current_turn)
+    elsif move.include?("kc")
+      @chess_board.castle_long(current_turn)
+    end
+
+    return "castle"
+  end
+  
+  def mark_piece_as_moved(piece)
+    if piece.instance_of?(Pawn) || piece.instance_of?(King) || piece.instance_of?(Rook)
       piece.moved = true
     end
   end
@@ -155,11 +182,13 @@ class Chess
 
   def prompt_move(board_message = 0)
     move = receive_move_prompt(board_message)
+
+    return nil, "castle" if move == "castle"
     return nil, "main menu" if move == "main menu"
 
     move_pair = translate_to_pair(move[-2..])
     piece_choices = generate_piece_choices(move)
-    
+
     if piece_choices.length > 1
       piece_choice = prompt_multiple_move_choices(piece_choices)
     else
@@ -169,7 +198,7 @@ class Chess
     return piece_choice, move_pair
   end
 
-  # move these to the validator
+  # maybe move these to the validator
   def target_square_friendly?(target_square)
     if !target_square.empty?
       target_square.piece.color == @chess_board.current_turn
@@ -205,7 +234,7 @@ class Chess
 
     pawn_two_below = find_pawn_below(board, move_pair, 2, current_turn)
     return [pawn_two_below] if !pawn_two_below.nil?
-      
+
     nil
   end
 
@@ -237,8 +266,20 @@ class Chess
       display_board(@chess_board.board, board_message)
       display_move_prompt(@chess_board.current_turn)
       move = gets.chomp
+      # binding.pry
 
+      if %W(kg1 kg8 kc1 kc1).include?(move)
+        move = castle(move)
+      end
+
+      if move.nil?
+        board_message = "move not valid"
+        next
+      end
+
+      return move if move == "castle"
       return "main menu" if %W(main menu).include?(move)
+
       # binding.pry
       validated_move = validate_move(move)
       return validated_move unless validated_move.nil?
