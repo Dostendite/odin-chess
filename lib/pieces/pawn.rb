@@ -7,12 +7,12 @@ require_relative "piece.rb"
 # -- with en-passant. Can also promote to a queen, knight, 
 # -- or bishop when getting to the end of the board
 class Pawn < Piece
-  attr_accessor :can_double_jump
+  attr_accessor :moved
 
   def initialize(color, position)
     super(color, position)
     @symbol = "♟♙"
-    @can_double_jump = true
+    @moved = false
   end
 
   def to_s
