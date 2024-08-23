@@ -46,7 +46,7 @@ class Chess
     @chess_board = Board.new
     @chess_board.board = @chess_board.generate_board
     @chess_board.setup_pieces
-    @chess_board.save_board
+    save_board
   end
 
   def show_reminder
@@ -75,19 +75,27 @@ class Chess
       menu_prompt = show_main_menu
       next unless %W(new load).include?(menu_prompt)
 
+      # main game loop
       until @game_over
         piece, move_pair = prompt_move
 
         if move_pair == "main menu"
-          @chess_board.save_board
+          save_board
           break
         end
 
+        mark_pawn_as_moved(piece)
         make_move(piece, move_pair)
         next_turn
       end
     end
     display_final_message
+  end
+  
+  def mark_pawn_as_moved(piece)
+    if piece.instance_of?(Pawn)
+      piece.moved = true
+    end
   end
 
   def show_main_menu
@@ -106,14 +114,14 @@ class Chess
       Serializer.update_save_numbers
     when "load"
       display_main_menu(1)
-      load_game(receive_load_choice)
+      load_board(receive_load_choice)
       return "load"
     end
   end
 
   def next_turn
     @chess_board.swap_players
-    @chess_board.save_board
+    save_board
   end
 
   def make_move(piece, move_pair)
@@ -124,23 +132,41 @@ class Chess
     if move.length == 2
       generate_pawn_choices(move)
     else
-      generate_pieces_in_range(@chess_board, move)
+      generate_pieces_in_range(move)
     end
+  end
+
+  def generate_pieces_in_range(move)
+    piece_type = @chess_board.find_piece_class(move[0].upcase)
+    color = @chess_board.current_turn
+    board = @chess_board.board
+
+    available_pieces = find_available_pieces(board, piece_type, color)
+    pieces_in_range = []
+    # binding.pry
+    available_pieces.each do |piece|
+      squares = piece.get_valid_squares(board)
+      if piece_in_range?(board, piece, squares, move)
+        pieces_in_range << piece
+      end
+    end
+    pieces_in_range
   end
 
   def prompt_move(board_message = 0)
     move = receive_move_prompt(board_message)
     return nil, "main menu" if move == "main menu"
 
+    move_pair = translate_to_pair(move[-2..])
     piece_choices = generate_piece_choices(move)
-
+    
     if piece_choices.length > 1
       piece_choice = prompt_multiple_move_choices(piece_choices)
     else
-      piece_choice = piece_choices
+      piece_choice = piece_choices[0]
     end
 
-    return piece_choice, move[-2..]
+    return piece_choice, move_pair
   end
 
   # move these to the validator
@@ -162,25 +188,25 @@ class Chess
     target_square = @chess_board.board[target_row][target_column]
 
     if target_square_friendly?(target_square)
-      prompt_move("move not valid") 
+      nil
     elsif target_square_unfriendly?(target_square)
-      @chess_board.find_attacking_pawns(move_pair)
+      current_turn = @chess_board.current_turn
+      find_attacking_pawns(@chess_board.board, move_pair, current_turn)
     else
       generate_peaceful_pawn_choices(move_pair)
     end
   end
 
   def generate_peaceful_pawn_choices(move_pair)
-    pawn_one_below = @chess_board.find_pawn_below(move_pair, 1)
-    pawn_two_below = @chess_board.find_pawn_below(move_pair, 2)
+    board = @chess_board.board
+    current_turn = @chess_board.current_turn
+    pawn_one_below = find_pawn_below(board, move_pair, 1, current_turn)
+    return [pawn_one_below] if !pawn_one_below.nil?
 
-    if !pawn_one_below.nil?
-      return [pawn_one_below]
-    elsif !pawn_two_below.nil?
-      return [pawn_two_below]
-    else
-      prompt_move("move not valid")
-    end
+    pawn_two_below = find_pawn_below(board, move_pair, 2, current_turn)
+    return [pawn_two_below] if !pawn_two_below.nil?
+      
+    nil
   end
 
   def check_game_over
@@ -191,10 +217,19 @@ class Chess
     # @game_over = true
   end
 
-  def load_game(save_number)
-    Serializer.update_save_numbers
-    @chess_board = Board.new
-    @chess_board.load_board(save_number)
+  def load_board(save_number)
+    @chess_board = load_save(save_number)
+    @chess_board.save_number = Serializer.get_save_amount
+  end
+
+  def save_board
+    if @chess_board.new_game
+      @chess_board.save_number = create_save(@chess_board)
+      Serializer.update_save_numbers
+      @chess_board.new_game = false
+    else
+      update_save(@chess_board, @chess_board.save_number)
+    end
   end
 
   def receive_move_prompt(board_message)
@@ -202,23 +237,45 @@ class Chess
       display_board(@chess_board.board, board_message)
       display_move_prompt(@chess_board.current_turn)
       move = gets.chomp
+
       return "main menu" if %W(main menu).include?(move)
-      
-      return validate_move(move) unless validate_move(move).nil?
+      # binding.pry
+      validated_move = validate_move(move)
+      return validated_move unless validated_move.nil?
+
+      board_message = "move not valid"
     end
   end
 
   def validate_move(move)
-    if move.length < 1 || move.length > 3
-      return nil
-    elsif move.length > 2
-      target_piece_type = @chess_board.find_piece_class(move[0].upcase)
-      return nil if target_piece_type.nil?
-    elsif move_out_of_bounds?(translate_to_pair(move[-2..]))
-     return nil
+    return nil if (move.length < 1 || move.length > 3)
+    return nil if move_out_of_bounds?(translate_to_pair(move[-2..]))
+      
+    if move.length == 2
+      pawn_choices = validate_pawn_move(move)
+      return nil if pawn_choices.nil?
+      return nil if pawn_choices.empty?
     else
-      move
+      # binding.pry
+      piece_choices = validate_piece_move(move)
+      return nil if piece_choices.nil?
+      return nil if piece_choices.empty?
     end
+    move
+  end
+
+  def validate_pawn_move(pawn_move)
+    generate_pawn_choices(pawn_move)
+  end
+
+  def validate_piece_move(piece_move)
+    target_piece_type = @chess_board.find_piece_class(piece_move[0].upcase)
+    return nil if target_piece_type.nil?
+
+    piece_choices = generate_pieces_in_range(piece_move)
+    return nil if piece_choices.empty? || piece_choices.nil?
+
+    piece_choices
   end
 
   private

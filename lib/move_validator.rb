@@ -5,23 +5,73 @@ require_relative "display"
 module MoveValidator
   include Display
 
-  def generate_pieces_in_range(board, piece_move)
-    piece_type = board.find_piece_class(piece_move[0].upcase)
-    target_pos_pair = translate_to_pair(piece_move[-2..])
-    board.find_pieces_in_range(piece_type, target_pos_pair)
+  def find_pawn_below(board, target_position_pair, increment, current_turn)
+    target_row, target_column = target_position_pair
+
+    # could use this to refactor the huge methods below
+    delta = current_turn == "Black" ? increment : -increment
+    square_below = board[target_row + delta][target_column]
+    validate_pawn_below(square_below, increment, current_turn)
   end
 
-  def generate_valid_squares(board, pieces_in_range, move_algebraic)
-    target_pos_pair = translate_to_pair(move_algebraic)
-    find_piece_squares(board, pieces_in_range, target_pos_pair)
-  end
-
-  def find_piece_squares(board, pieces, target_pair)
-    piece_squares = []
-    pieces.each do |piece|
-      piece_squares += board.find_valid_squares(piece)
+  def validate_pawn_below(square_below, increment, current_turn)
+    if !square_below.empty? && square_below.piece.instance_of?(Pawn)
+      if square_below.opposing?(current_turn)
+        return nil
+      elsif increment == 2 && square_below.piece.moved
+        return nil
+      end
+      square_below.piece
     end
-    piece_squares
+  end
+
+  def find_attacking_pawns(board, target_position_pair, current_turn)
+    attacking_pawns = []
+    target_row, target_column = target_position_pair
+
+    if current_turn == "Black"
+      left_side = board[target_row + 1][target_column - 1]
+      right_side = board[target_row + 1][target_column + 1]
+    else
+      left_side = board[target_row - 1][target_column - 1]
+      right_side = board[target_row - 1][target_column + 1]
+    end
+
+    if !left_side.empty? && left_side.piece.instance_of?(Pawn) &&
+      left_side.piece.color == current_turn
+      attacking_pawns << left_side.piece
+    end
+
+    if !right_side.empty? && right_side.piece.instance_of?(Pawn) &&
+      right_side.piece.color == current_turn
+      attacking_pawns << right_side.piece
+    end
+    attacking_pawns
+  end
+
+  # RETURNS TRUE IF PIECE IS IN RANGE OF SQUARE
+  def piece_in_range?(board, piece, squares, move)
+    squares.any? { |square| square.coordinate == move[-2..] }
+  end
+
+  def find_available_pieces(board, piece_type, color)
+    available_pieces = []
+    board.each do |row|
+      row.each do |square|
+        next if square.empty?
+
+        target_piece = square.piece
+        if target_piece.color == color && target_piece.instance_of?(piece_type)
+          available_pieces << square.piece
+        end
+      end 
+    end
+    available_pieces
+  end
+
+  def move_out_of_bounds?(target_position_pair)
+    row, column = target_position_pair
+    !(0..7).include?(row) || !(0..7).include?(column)
   end
 
   def translate_to_pair(position)
