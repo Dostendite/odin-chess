@@ -25,4 +25,19 @@ class Knight < Piece
     end
     moves
   end
+
+  def get_valid_squares(board)
+    def find_knight_squares(board, piece)
+      knight_squares = []
+      row, column = @position
+      @knight_moves.each do |knight_move|
+        row_delta, column_delta = knight_move
+        potential_position = (row + row_delta), (column + column_delta)
+        next if out_of_bounds?(potential_position)
+  
+        knight_squares << board[row + row_delta][column + column_delta]
+      end
+      knight_squares
+    end
+  end
 end
