@@ -4,13 +4,13 @@ require_relative "piece.rb"
 # -- can freely move in the horizontal
 # -- and vertical axes
 class Rook < Piece
-  attr_accessor :can_castle
+  attr_accessor :moved
   attr_reader :axes
 
   def initialize(color, position)
     super(color, position)
     @symbol = "♜♖"
-    @can_castle = true
+    @moved = false
     @axes = { x: 7, y: 7, d: 0 }
   end
 end
