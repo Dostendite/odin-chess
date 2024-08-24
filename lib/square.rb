@@ -14,6 +14,23 @@ class Square
     @coordinate = coordinate
     @piece = nil
     @symbol = nil
+    @en_passant = false
+  end
+
+  def en_passant_available?
+    @en_passant
+  end
+
+  def friendly?(color)
+    return false if empty?
+
+    @piece.color == color
+  end
+
+  def opposing?(color)
+    return false if empty?
+
+    @piece.color != color
   end
 
   def empty?
