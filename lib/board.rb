@@ -58,12 +58,6 @@ class Board
     end
   end
 
-  # def move_piece(piece, target_position_pair)
-  #   remove_piece(piece.position)
-  #   piece.position = target_position_pair
-  #   add_piece(piece, piece.position)
-  # end
-
   def castle_short(current_turn = @current_turn)
     # binding.pry
     row = current_turn == "White" ? 0 : 7
@@ -126,6 +120,38 @@ class Board
   def promote_pawn(pawn)
     queen = create_piece("queen", pawn.color, pawn.position)
     @board.add_piece(pawn.position, queen)
+  end
+
+  def give_check(color)
+    king = find_available_pieces(@board, King, color)[0]
+    puts "Found king:"
+    p king
+    king.in_check = true
+    p king
+  end
+
+  def take_check(color)
+    king = find_available_pieces(@board, King, color)[0]
+    puts "Found king:"
+    p king
+    king.in_check = false
+    p king
+  end
+
+  def find_all_pieces(color = nil)
+    pieces = []
+
+    board.each do |row|
+      row.each do |square|
+        if !square.empty?
+          if !color.nil?
+            pieces << square.piece if square.friendly?(color)
+          else
+            pieces << square.piece
+          end
+        end
+      end
+    end
   end
 
   def find_piece_class(piece_type)
