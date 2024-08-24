@@ -27,13 +27,12 @@ class Chess
   def initialize
     @chess_board = nil
     @game_over = false
-    @displayed_reminder = false
     @displayed_en_passant = false
   end
 
   def play_chess
     introduce_player
-    show_reminder
+    display_main_menu_reminder
     play_game
   end
   
@@ -47,13 +46,6 @@ class Chess
     @chess_board.board = @chess_board.generate_board
     @chess_board.setup_pieces
     save_board
-  end
-
-  def show_reminder
-    unless @displayed_reminder
-      display_main_menu_reminder
-      @displayed_reminder = true
-    end
   end
 
   # -------- CHESS --------
@@ -89,6 +81,7 @@ class Chess
           next
         end
 
+        @chess_board.remove_en_passant
         mark_piece_as_moved(piece)
         make_move(piece, move_pair)
         next_turn
@@ -97,22 +90,13 @@ class Chess
     display_final_message
   end
 
-  # white
-  # default king pos -> e1
-  # short rook pos -> h1 | long rook pos -> a1
-  # squares that must be intact:
-  
-  # black
-  # default king pos -> e8
-  # short rook pos -> h8 | long rook pos -> a8
-
   def castle(move)
     current_turn = @chess_board.current_turn
     return nil unless @chess_board.castle_available?(current_turn)
 
-    if move.include?("kg")
+    if move.include?("kg") && move.length == 3
       @chess_board.castle_short(current_turn)
-    elsif move.include?("kc")
+    elsif move.include?("kc") && move.length == 3
       @chess_board.castle_long(current_turn)
     end
 
@@ -130,6 +114,7 @@ class Chess
     process_main_menu_choice(main_menu_choice)
   end
 
+  # add "close" or "exit" to exit the game
   def process_main_menu_choice(main_menu_choice)
     case main_menu_choice
     when "new"
@@ -155,22 +140,19 @@ class Chess
     @chess_board.move_piece(piece, move_pair)
   end
 
-  def generate_piece_choices(move)
-    if move.length == 2
-      generate_pawn_choices(move)
-    else
-      generate_pieces_in_range(move)
-    end
-  end
-
   def generate_pieces_in_range(move)
-    piece_type = @chess_board.find_piece_class(move[0].upcase)
+    if move.length == 2
+      piece_type = Pawn
+    else
+      piece_type = @chess_board.find_piece_class(move[0].upcase)
+    end
+
     color = @chess_board.current_turn
     board = @chess_board.board
 
     available_pieces = find_available_pieces(board, piece_type, color)
     pieces_in_range = []
-    # binding.pry
+
     available_pieces.each do |piece|
       squares = piece.get_valid_squares(board)
       if piece_in_range?(board, piece, squares, move)
@@ -185,9 +167,8 @@ class Chess
 
     return nil, "castle" if move == "castle"
     return nil, "main menu" if move == "main menu"
-
     move_pair = translate_to_pair(move[-2..])
-    piece_choices = generate_piece_choices(move)
+    piece_choices = generate_pieces_in_range(move)
 
     if piece_choices.length > 1
       piece_choice = prompt_multiple_move_choices(piece_choices)
@@ -209,33 +190,6 @@ class Chess
     if !target_square.empty?
       target_square.piece.color != @chess_board.current_turn
     end
-  end
-
-  def generate_pawn_choices(move)
-    move_pair = translate_to_pair(move[-2..])
-    target_row, target_column = move_pair
-    target_square = @chess_board.board[target_row][target_column]
-
-    if target_square_friendly?(target_square)
-      nil
-    elsif target_square_unfriendly?(target_square)
-      current_turn = @chess_board.current_turn
-      find_attacking_pawns(@chess_board.board, move_pair, current_turn)
-    else
-      generate_peaceful_pawn_choices(move_pair)
-    end
-  end
-
-  def generate_peaceful_pawn_choices(move_pair)
-    board = @chess_board.board
-    current_turn = @chess_board.current_turn
-    pawn_one_below = find_pawn_below(board, move_pair, 1, current_turn)
-    return [pawn_one_below] if !pawn_one_below.nil?
-
-    pawn_two_below = find_pawn_below(board, move_pair, 2, current_turn)
-    return [pawn_two_below] if !pawn_two_below.nil?
-
-    nil
   end
 
   def check_game_over
@@ -266,7 +220,6 @@ class Chess
       display_board(@chess_board.board, board_message)
       display_move_prompt(@chess_board.current_turn)
       move = gets.chomp
-      # binding.pry
 
       if %W(kg1 kg8 kc1 kc1).include?(move)
         move = castle(move)
@@ -280,7 +233,6 @@ class Chess
       return move if move == "castle"
       return "main menu" if %W(main menu).include?(move)
 
-      # binding.pry
       validated_move = validate_move(move)
       return validated_move unless validated_move.nil?
 
@@ -291,32 +243,16 @@ class Chess
   def validate_move(move)
     return nil if (move.length < 1 || move.length > 3)
     return nil if move_out_of_bounds?(translate_to_pair(move[-2..]))
-      
-    if move.length == 2
-      pawn_choices = validate_pawn_move(move)
-      return nil if pawn_choices.nil?
-      return nil if pawn_choices.empty?
-    else
-      # binding.pry
-      piece_choices = validate_piece_move(move)
-      return nil if piece_choices.nil?
-      return nil if piece_choices.empty?
+
+    unless move.length == 2
+      target_piece_type = @chess_board.find_piece_class(move[0].upcase)
+      return nil if target_piece_type.nil?
     end
-    move
-  end
 
-  def validate_pawn_move(pawn_move)
-    generate_pawn_choices(pawn_move)
-  end
-
-  def validate_piece_move(piece_move)
-    target_piece_type = @chess_board.find_piece_class(piece_move[0].upcase)
-    return nil if target_piece_type.nil?
-
-    piece_choices = generate_pieces_in_range(piece_move)
+    piece_choices = generate_pieces_in_range(move)
     return nil if piece_choices.empty? || piece_choices.nil?
 
-    piece_choices
+    move
   end
 
   private

@@ -29,7 +29,6 @@ class Board
     @current_turn = "White"
     @new_game = true
     @save_number = nil
-    @en_passant_pawn_square = nil # last pawn to do en passant (to remove)
     @piece_types = { "N" => Knight, "B" => Bishop, "R" => Rook, 
                     "Q" => Queen, "K" => King }
   end
@@ -59,7 +58,6 @@ class Board
   end
 
   def castle_short(current_turn = @current_turn)
-    # binding.pry
     row = current_turn == "White" ? 0 : 7
     king = @board[row][4].piece
     rook = @board[row][7].piece
@@ -72,7 +70,6 @@ class Board
   end
 
   def castle_long(current_turn = @current_turn)
-    # binding.pry
     row = current_turn == "White" ? 0 : 7
     king = @board[row][4].piece
     rook = @board[row][0].piece
@@ -101,9 +98,45 @@ class Board
   end
 
   def move_piece(piece, target_position_pair)
+    check_en_passant(piece, target_position_pair)
     remove_piece(piece.position)
     piece.position = target_position_pair
     add_piece(piece, piece.position)
+  end
+
+  def check_en_passant(piece, target_position_pair)
+    piece_row = piece.position[0] # 2 or 7
+    target_row, target_column = target_position_pair # 4 or 5
+    difference = (target_row - piece_row).abs
+
+    # marks en passant square as en passant
+    if difference == 2
+      if piece.color == "Black"
+        @board[target_row + 1][target_column].en_passant_black = true
+      else
+        @board[target_row - 1][target_column].en_passant_white = true
+      end
+    end
+
+    # removes en passant victim
+    if piece.color == "Black"
+      if @board[target_row][target_column].en_passant_white = true 
+        @board[target_row + 1][target_column].piece = nil
+      end
+    else
+      if @board[target_row][target_column].en_passant_black = true
+        @board[target_row - 1][target_column].piece = nil
+      end
+    end
+    # if last pawn double jumped, mark square behind as en passant
+  end
+
+  def remove_en_passant
+    if @current_turn == "White"
+      @board.each { |row| row.each { |square| square.en_passant_black = false } }
+    else
+      @board.each { |row| row.each { |square| square.en_passant_white = false } }
+    end
   end
 
   def add_piece(piece, position_pair)
@@ -138,9 +171,29 @@ class Board
     p king
   end
 
-  def find_all_pieces(color = nil)
-    pieces = []
+  # take these moves to simulate check
+  # afterwards
+  def find_all_move_squares(color)
+    all_pieces = find_all_pieces(color)
+    available_squares = []
 
+    all_pieces.each do |piece|
+      available_squares += piece.get_valid_squares(@board)
+    end
+    available_squares
+  end
+
+  def predict_check(move)
+    
+  end
+
+  def available_dodges(board)
+    
+  end
+
+  def find_all_pieces(color = nil)
+
+    pieces = []
     board.each do |row|
       row.each do |square|
         if !square.empty?
@@ -152,6 +205,7 @@ class Board
         end
       end
     end
+    pieces
   end
 
   def find_piece_class(piece_type)

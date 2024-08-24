@@ -55,7 +55,7 @@ class Pawn < Piece
     if !diagonal_left_square.nil?
       if diagonal_left_square.opposing?(@color)
         attacking_moves << diagonal_left_square
-      elsif diagonal_left_square.en_passant
+      elsif diagonal_left_square.en_passant_available?(@color)
         attacking_moves << diagonal_left_square
       end
     end
@@ -63,7 +63,7 @@ class Pawn < Piece
     if !diagonal_right_square.nil?
       if diagonal_right_square.opposing?(@color)
         attacking_moves << diagonal_right_square
-      elsif diagonal_right_square.en_passant
+      elsif diagonal_right_square.en_passant_available?(@color)
         attacking_moves << diagonal_right_square
       end
     end
