@@ -84,15 +84,28 @@ class Board
   def castle_available?(color = @current_turn, length)
     return false if king_moved?(color)
 
-    
+    opponent_color = color == "White" ? "Black" : "White"
     row = color == "White" ? 0 : 7
     column = length == "short" ? 7 : 0
+    squares_to_check = []
 
-    # short:
-    # return false if [row][4, 5, 6, 7]
-    # are under attack
-    # long:
-    # return false if [row][2, 3, 4]
+    if length == "short"
+      squares_to_check << @board[row][4]
+      squares_to_check << @board[row][5]
+      squares_to_check << @board[row][6]
+    else
+      squares_to_check << @board[row][2]
+      squares_to_check << @board[row][3]
+      squares_to_check << @board[row][4]
+    end
+
+    opponent_squares = find_all_move_squares(opponent_color)
+
+    squares_under_attack = squares_to_check.any? do |square_to_check|
+      opponent_squares.include?(square_to_check)
+    end
+
+    return false if squares_under_attack
 
     rook_square = @board[row][column]
     if !rook_square.empty?

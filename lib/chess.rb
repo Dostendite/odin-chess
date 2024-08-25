@@ -79,6 +79,7 @@ class Chess
         end
 
         if move_pair == "castle"
+          check_game_over
           next_turn
           next
         end
@@ -121,15 +122,21 @@ class Chess
 
   def castle(move)
     current_turn = @chess_board.current_turn
-    return nil unless @chess_board.castle_available?(current_turn)
 
-    if move.include?("kg") && move.length == 3
-      @chess_board.castle_short(current_turn)
-    elsif move.include?("kc") && move.length == 3
-      @chess_board.castle_long(current_turn)
+    if move.downcase.include?("kg") && move.length == 3
+      if @chess_board.castle_available?(current_turn, "short")
+        @chess_board.castle_short(current_turn)
+      else
+        return nil
+      end
+    elsif move.downcase.include?("kc") && move.length == 3
+      if @chess_board.castle_available?(current_turn, "long")
+        @chess_board.castle_long(current_turn)
+      else
+        return nil
+      end
     end
-
-    return "castle"
+    "castle"
   end
   
   def mark_piece_as_moved(piece)
@@ -292,9 +299,7 @@ class Chess
   end
 
   def validate_move(move)
-    move_pair = translate_to_pair(move[-2..])
     return nil if (move.length < 1 || move.length > 3)
-    return nil if move_out_of_bounds?(move_pair)
 
     if move.length == 3
       piece_type = @chess_board.find_piece_class(move[0].upcase)
@@ -303,9 +308,13 @@ class Chess
     end
 
     return nil if piece_type.nil?
+
+    move_pair = translate_to_pair(move[-2..])
+    return nil if move_out_of_bounds?(move_pair)
+    
     piece_choices = generate_pieces_in_range(move)
     return nil if piece_choices.empty? || piece_choices.nil?
-    
+
     move
   end
 
