@@ -13,11 +13,5 @@ require_relative "lib/pieces/rook.rb"
 require_relative "lib/pieces/queen.rb"
 require_relative "lib/pieces/king.rb"
 
-# remember to use bundle exec ruby main.rb!
-# and bin/rspec for tests
-
 chess = Chess.new
 chess.play_chess
-
-# board = Board.new
-# board.create_new_board
