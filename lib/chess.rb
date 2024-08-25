@@ -78,6 +78,7 @@ class Chess
         @chess_board.remove_en_passant
         mark_piece_as_moved(piece)
         make_move(piece, move_pair)
+        check_for_promotion(piece)
         mark_check
         check_game_over
         break if @game_over
@@ -91,6 +92,21 @@ class Chess
     delete_final_board
     sleep(3)
     display_final_message
+  end
+
+  def check_for_promotion(piece)
+    return if !piece.instance_of?(Pawn)
+
+    # binding.pry
+    last_row = @chess_board.current_turn == "White" ? 7 : 0
+
+    if piece.position[0] == last_row
+      promotion_choice = receive_promotion_prompt
+      piece_types = @chess_board.piece_types
+
+      piece_class = piece_types[promotion_choice[0].upcase]
+      @chess_board.promote_pawn(piece, piece_class)
+    end
   end
 
   def mark_check
@@ -189,6 +205,7 @@ class Chess
 
     return nil, "castle" if move == "castle"
     return nil, "main menu" if move == "main menu"
+
     move_pair = translate_to_pair(move[-2..])
     piece_choices = generate_pieces_in_range(move)
 
@@ -215,7 +232,6 @@ class Chess
   end
   
   def check_game_over
-    # binding.pry
     @game_over = checkmate? || stalemate?
   end
 
@@ -272,7 +288,8 @@ class Chess
       display_move_prompt(@chess_board.current_turn)
       move = gets.chomp
 
-      if %W(kg1 kg8 kc1 kc1).include?(move)
+      king_moved = @chess_board.king_moved?(@chess_board.current_turn)
+      if %W(kg1 kg8 kc1 kc1).include?(move) && !king_moved
         move = castle(move)
       end
 
@@ -327,6 +344,19 @@ class Chess
       target_piece = piece_choices[choice - 1]
 
       return target_piece if piece_choices.include?(target_piece)
+    end
+  end
+
+  def receive_promotion_prompt
+    display_promotion_prompt
+    loop do
+      choice = gets.chomp
+
+      if !%w(queen rook bishop knight).include?(choice.downcase)
+        puts "Please enter one of the pieces above!"
+      else
+        return choice
+      end
     end
   end
 

@@ -22,6 +22,7 @@ ORD_BASE = 97
 class Board
   include Serializer
   include MoveValidator
+  attr_reader :piece_types
   attr_accessor :board, :current_turn, :save_number, :new_game
 
   def initialize(board = nil)
@@ -50,11 +51,8 @@ class Board
   end
 
   def king_moved?(color)
-    row = color == "White" ? 0 : 7
-    
-    if !@board[row][4].empty?
-      @board[row][4].piece.moved == true
-    end
+    king = find_available_pieces(@board, King, color)[0]
+    king.moved
   end
 
   def castle_short(current_turn = @current_turn)
@@ -169,9 +167,10 @@ class Board
     @board[row][column].piece = nil
   end
 
-  def promote_pawn(pawn)
-    queen = create_piece("queen", pawn.color, pawn.position)
-    @board.add_piece(pawn.position, queen)
+  def promote_pawn(pawn, piece_type)
+    row, column = pawn.position
+    new_piece = create_piece(piece_type, pawn.color, pawn.position)
+    @board[row][column].piece = new_piece
   end
 
   def give_check(color)
