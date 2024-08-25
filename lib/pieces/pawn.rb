@@ -20,8 +20,6 @@ class Pawn < Piece
   end
 
   def find_peaceful_moves(row, column, board)
-    # check the square in front
-    # if it's empty, add it
     peaceful_moves = []
     delta_one = color == "Black" ? -1 : 1
     delta_two = color == "Black" ? -2 : 2
@@ -36,7 +34,7 @@ class Pawn < Piece
 
     if !@moved
       square_two_in_front = board[row + delta_two][column]
-      if !square_in_front.nil?
+      if !square_in_front.nil? && square_in_front.empty?
         if square_two_in_front.empty?
           peaceful_moves << square_two_in_front
         end
