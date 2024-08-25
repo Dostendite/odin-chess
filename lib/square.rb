@@ -5,7 +5,7 @@ require "rainbow"
 # -- blocks and store the pieces within
 class Square
   attr_reader :coordinate, :color
-  attr_accessor :piece
+  attr_accessor :piece, :en_passant_white, :en_passant_black
 
   # the coordinate is represented with
   # algebraic notation, e.g.: c4 -> (5, 2)
@@ -14,11 +14,13 @@ class Square
     @coordinate = coordinate
     @piece = nil
     @symbol = nil
-    @en_passant = false
+    @en_passant_white = false
+    @en_passant_black = false
   end
 
-  def en_passant_available?
-    @en_passant
+  def en_passant_available?(color)
+    return true if color == "White" && @en_passant_black
+    return true if color == "Black" && @en_passant_white
   end
 
   def friendly?(color)
