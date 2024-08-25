@@ -49,20 +49,6 @@ class Chess
     save_board
   end
 
-  # -------- CHESS --------
-  # 1. Set up the board & pieces
-  # 2. Prompt for a move
-  # 3. Move the desired piece
-  # 4. Repeat
-  # 5. When the king receives a check, check for checkmate
-  # if the king is checkmated: the game is over
-  #    -> else: let the player make only moves that stop the
-  #             king from getting checkmated
-  # 6. Once the game is over, thank the player for            
-  # trying out the game and send them to the main menu
-  # display_final_message
-
-  # main game loop - add stalemate, en passant & checkmate
   def play_game
     loop do
       menu_prompt = show_main_menu
@@ -93,7 +79,6 @@ class Chess
         mark_piece_as_moved(piece)
         make_move(piece, move_pair)
         mark_check
-        # binding.pry
         check_game_over
         break if @game_over
 
@@ -103,6 +88,7 @@ class Chess
       break if @game_over
     end
     display_board(@chess_board.board, @final_message, @chess_board.current_turn)
+    delete_final_board
     sleep(3)
     display_final_message
   end
@@ -229,10 +215,12 @@ class Chess
   end
   
   def check_game_over
-    @game_over = checkmate? || stalemate? 
+    # binding.pry
+    @game_over = checkmate? || stalemate?
   end
 
   def checkmate?
+    # king has moves
     opponent_color = @chess_board.current_turn == "White" ? "Black" : "White"
     if @chess_board.king_in_check?(opponent_color)
       check_dodges = @chess_board.find_available_check_dodges(opponent_color)
@@ -245,11 +233,22 @@ class Chess
   end
 
   def stalemate?
-    # if
-    #   @final_message = "stalemate"
-    #   # return true
-    # end
+    opponent_color = @chess_board.current_turn == "White" ? "Black" : "White"
+    # if the oppposing king is not in check but they
+    # have no moves, it's a stalemate
+    if !@chess_board.king_in_check?(opponent_color)
+      check_dodges = @chess_board.find_available_check_dodges(opponent_color)
+      if check_dodges.flatten.empty?
+        @final_message = "stalemate"
+        return true
+      end
+    end
     false
+  end
+
+  def delete_final_board
+    save_number = @chess_board.save_number
+    delete_save(save_number)
   end
 
   def load_board(save_number)

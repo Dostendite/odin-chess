@@ -224,6 +224,7 @@ class Board
 
     # undo move
     move_piece(piece, original_position)
+
     if target_piece
       add_piece(target_piece, target_piece.position)
     end
