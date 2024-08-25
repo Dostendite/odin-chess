@@ -83,9 +83,16 @@ class Board
 
   def castle_available?(color = @current_turn, length)
     return false if king_moved?(color)
+
     
     row = color == "White" ? 0 : 7
     column = length == "short" ? 7 : 0
+
+    # short:
+    # return false if [row][4, 5, 6, 7]
+    # are under attack
+    # long:
+    # return false if [row][2, 3, 4]
 
     rook_square = @board[row][column]
     if !rook_square.empty?
@@ -98,7 +105,7 @@ class Board
   end
 
   def move_piece(piece, target_position_pair)
-    check_en_passant(piece, target_position_pair)
+    check_en_passant(piece, target_position_pair) if piece.instance_of?(Pawn)
     remove_piece(piece.position)
     piece.position = target_position_pair
     add_piece(piece, piece.position)
@@ -120,15 +127,14 @@ class Board
 
     # removes en passant victim
     if piece.color == "Black"
-      if @board[target_row][target_column].en_passant_white = true 
+      if @board[target_row][target_column].en_passant_white == true 
         @board[target_row + 1][target_column].piece = nil
       end
     else
-      if @board[target_row][target_column].en_passant_black = true
+      if @board[target_row][target_column].en_passant_black == true
         @board[target_row - 1][target_column].piece = nil
       end
     end
-    # if last pawn double jumped, mark square behind as en passant
   end
 
   def remove_en_passant
@@ -157,22 +163,14 @@ class Board
 
   def give_check(color)
     king = find_available_pieces(@board, King, color)[0]
-    puts "Found king:"
-    p king
     king.in_check = true
-    p king
   end
 
   def take_check(color)
     king = find_available_pieces(@board, King, color)[0]
-    puts "Found king:"
-    p king
     king.in_check = false
-    p king
   end
 
-  # take these moves to simulate check
-  # afterwards
   def find_all_move_squares(color)
     all_pieces = find_all_pieces(color)
     available_squares = []
@@ -183,16 +181,77 @@ class Board
     available_squares
   end
 
-  def predict_check(move)
-    
+  def king_in_check?(king_color)
+    opponent_color = king_color == "White" ? "Black" : "White"
+    opponent_moves = find_all_move_squares(opponent_color)
+
+    king = find_available_pieces(@board, King, king_color)[0]
+    king_row, king_column = king.position
+    king_square = @board[king_row][king_column]
+
+    opponent_moves.include?(king_square)
   end
 
-  def available_dodges(board)
-    
+  def move_leads_to_check?(piece, target_pair)
+    check_condition = false
+
+    row, column = target_pair
+    target_square = @board[row][column]
+    original_position = piece.position
+
+    if !target_square.empty?
+      target_piece = target_square.piece.dup
+    end
+
+    move_piece(piece, target_pair)
+
+    if king_in_check?(@current_turn)
+      check_condition = true
+    end
+
+    # undo move
+    move_piece(piece, original_position)
+    if target_piece
+      add_piece(target_piece, target_piece.position)
+    end
+
+    check_condition
   end
+
+  def find_available_check_dodges(color)
+    # every element inside contains the piece & move pair
+    available_pieces_and_moves = []
+    available_pieces = find_all_pieces(color)
+
+    available_pieces.each do |piece|
+      available_squares = piece.get_valid_squares(@board)
+
+      available_squares.each do |square|
+        original_piece_pos = piece.position
+        
+        target_pair = translate_to_pair(square.coordinate)
+
+        if !square.empty?
+          square_piece = square.piece.dup
+        end
+
+        move_piece(piece, target_pair)
+
+        if !king_in_check?(color)
+          available_pieces_and_moves << [piece, target_pair]
+        end
+
+        # undo move
+        move_piece(piece, original_piece_pos)
+        if !square_piece.nil?
+          add_piece(square_piece, square_piece.position)
+        end
+      end
+    end
+    available_pieces_and_moves
+  end 
 
   def find_all_pieces(color = nil)
-
     pieces = []
     board.each do |row|
       row.each do |square|

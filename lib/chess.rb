@@ -26,6 +26,7 @@ class Chess
 
   def initialize
     @chess_board = nil
+    @final_message = nil
     @game_over = false
     @displayed_en_passant = false
   end
@@ -68,8 +69,9 @@ class Chess
       next unless %W(new load).include?(menu_prompt)
 
       # main game loop
+      board_message = 0
       until @game_over
-        piece, move_pair = prompt_move
+        piece, move_pair = prompt_move(board_message)
 
         if move_pair == "main menu"
           save_board
@@ -81,13 +83,40 @@ class Chess
           next
         end
 
+        if !valid_move?(piece, move_pair)
+          board_message = "causes check"
+          next
+        end
+        
         @chess_board.remove_en_passant
         mark_piece_as_moved(piece)
         make_move(piece, move_pair)
+        mark_check
+        # binding.pry
+        check_game_over
+        break if @game_over
+
         next_turn
+        board_message = 0
       end
+      break if @game_over
     end
+    display_board(@chess_board.board, @final_message, @chess_board.current_turn)
+    sleep(3)
     display_final_message
+  end
+
+  def mark_check
+    opponent_color = @chess_board.current_turn == "White" ? "Black" : "White"
+    if @chess_board.king_in_check?(opponent_color)
+      @chess_board.give_check(opponent_color)
+    else
+      @chess_board.take_check(opponent_color)
+    end
+  end
+
+  def valid_move?(piece, move_pair)
+    !@chess_board.move_leads_to_check?(piece, move_pair)
   end
 
   def castle(move)
@@ -191,13 +220,29 @@ class Chess
       target_square.piece.color != @chess_board.current_turn
     end
   end
-
+  
   def check_game_over
-    # mated_color = find_checkmate
-    # display_checkmate_message(mated_color)
-    # ^^ under the board
-    # delete the save
-    # @game_over = true
+    @game_over = checkmate? || stalemate? 
+  end
+
+  def checkmate?
+    opponent_color = @chess_board.current_turn == "White" ? "Black" : "White"
+    if @chess_board.king_in_check?(opponent_color)
+      check_dodges = @chess_board.find_available_check_dodges(opponent_color)
+      if check_dodges.flatten.empty?
+        @final_message = "checkmate"
+        return true
+      end
+    end
+    false
+  end
+
+  def stalemate?
+    # if
+    #   @final_message = "stalemate"
+    #   # return true
+    # end
+    false
   end
 
   def load_board(save_number)
@@ -234,6 +279,12 @@ class Chess
       return "main menu" if %W(main menu).include?(move)
 
       validated_move = validate_move(move)
+
+      if validated_move == "under check"
+        board_message = "under check"
+        next
+      end
+
       return validated_move unless validated_move.nil?
 
       board_message = "move not valid"
@@ -241,17 +292,20 @@ class Chess
   end
 
   def validate_move(move)
+    move_pair = translate_to_pair(move[-2..])
     return nil if (move.length < 1 || move.length > 3)
-    return nil if move_out_of_bounds?(translate_to_pair(move[-2..]))
+    return nil if move_out_of_bounds?(move_pair)
 
-    unless move.length == 2
-      target_piece_type = @chess_board.find_piece_class(move[0].upcase)
-      return nil if target_piece_type.nil?
+    if move.length == 3
+      piece_type = @chess_board.find_piece_class(move[0].upcase)
+    else
+      piece_type = Pawn
     end
 
+    return nil if piece_type.nil?
     piece_choices = generate_pieces_in_range(move)
     return nil if piece_choices.empty? || piece_choices.nil?
-
+    
     move
   end
 
