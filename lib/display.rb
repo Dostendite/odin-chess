@@ -60,7 +60,7 @@ module Display
     end
   end
 
-  def display_board(board, board_message = 0)
+  def display_board(board, board_message = 0, winner_color = nil)
     clear_screen
     board.reverse.each_with_index do |row, index|
       row.each do |square|
@@ -73,23 +73,23 @@ module Display
     end
     puts Rainbow("  a b c d e f g h ").bright
 
-    display_extra_board_message(board_message) unless board_message == 0
+    display_extra_board_message(board_message, winner_color) unless board_message == 0
   end
 
-  def display_extra_board_message(board_message = 0)
+  def display_extra_board_message(board_message = 0, winner_color = nil)
     case board_message
     when "move not valid"
       display_move_not_valid_message
     when "illegal"
       display_illegal_message
-    when "under check"
+    when "causes check"
       display_under_check_message
     when "en passant"
       display_en_passant_message
     when "stalemate"
       display_stalemate_message
     when "checkmate"
-      display_checkmate_message
+      display_checkmate_message(winner_color)
     end
   end
 
@@ -110,7 +110,7 @@ module Display
   end
 
   def display_under_check_message
-    print_skyblue("You can't move that piece! You're under check!", true)
+    print_skyblue("You can't move that piece! That leads to a check!", true)
   end
 
   def display_illegal_message
@@ -128,13 +128,12 @@ module Display
 
   def display_stalemate_message
     print_skyblue("OMG, there was a ")
-    puts Rainbow("stalemate! ").skyblue.bright
+    puts Rainbow(winner"stalemate! ").skyblue.bright
     print_skyblue("Nobody wins.")
   end
 
-  def display_checkmate_message(winner_color = "Black")
-    print {Rainbow("Checkmate! ").skyblue.bright}
-    print_skyblue("#{winner_color.capitalize} wins!")
+  def display_checkmate_message(winner_color)
+    print_skyblue("Checkmate! #{winner_color.capitalize} wins!")
   end
 
   def display_max_saves_message
@@ -146,11 +145,12 @@ module Display
     final_message = <<~HEREDOC
       Thank you so much for playing, I hope
       you enjoyed the game!
-
-      You will now be returned to the main menu.
     HEREDOC
     print_skyblue(final_message)
-    display_continue_prompt
+    print_skyblue("Made by ")
+    print Rainbow("Dostendite").royalblue.bright
+    puts
+    display_end_prompt
   end
 
   def display_promote_prompt
@@ -187,8 +187,15 @@ module Display
     gets
   end
 
+  def display_end_prompt
+    puts
+    print Rainbow("Press any button to end... ").italic
+    gets
+  end
+
   def clear_screen
     # cls on windows?
+    puts
     system("clear")
   end
 
