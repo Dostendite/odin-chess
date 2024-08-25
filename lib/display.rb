@@ -128,7 +128,7 @@ module Display
 
   def display_stalemate_message
     print_skyblue("OMG, there was a ")
-    puts Rainbow(winner"stalemate! ").skyblue.bright
+    puts Rainbow("stalemate! ").skyblue.bright
     print_skyblue("Nobody wins.")
   end
 
@@ -153,9 +153,9 @@ module Display
     display_end_prompt
   end
 
-  def display_promote_prompt
-    puts "Input piece to promote your pawn to..."
-    puts
+  def display_promotion_prompt
+    print_skyblue("Input piece to promote your pawn to...", true)
+    puts Rainbow("Queen / Rook / Bishop / Knight").gray.bright
   end
 
   def display_load_prompt
