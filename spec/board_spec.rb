@@ -480,40 +480,40 @@ RSpec.describe Board do
     end
   end
 
-  # describe "#setup_pieces" do
-  #   before do
-  #     allow(chess_board).to receive(:setup_pawns)
-  #     allow(chess_board).to receive(:setup_knight)
-  #     allow(chess_board).to receive(:setup_bishops)
-  #     allow(chess_board).to receive(:setup_rooks)
-  #     allow(chess_board).to receive(:setup_royalty)
-  #   end
+  describe "#setup_pieces" do
+    before do
+      allow(chess_board).to receive(:setup_pawns)
+      allow(chess_board).to receive(:setup_knights)
+      allow(chess_board).to receive(:setup_bishops)
+      allow(chess_board).to receive(:setup_rooks)
+      allow(chess_board).to receive(:setup_royalty)
+    end
 
-  #   after do
-  #     chess_board.setup_pieces
-  #   end
+    after do
+      chess_board.setup_pieces
+    end
 
-  #   it "calls setup_pawns" do
-  #     expect(chess_board).to receive(:setup_pawns)
+    it "calls setup_pawns" do
+      expect(chess_board).to receive(:setup_pawns)
       
-  #   end
+    end
 
-  #   it "calls setup_knights" do
-  #     expect(chess_board).to receive(:setup_knights)
-  #   end
+    it "calls setup_knights" do
+      expect(chess_board).to receive(:setup_knights)
+    end
 
-  #   it "calls setup_bishop" do
-  #     expect(chess_board).to receive(:setup_bishops)
-  #   end
+    it "calls setup_bishop" do
+      expect(chess_board).to receive(:setup_bishops)
+    end
 
-  #   it "calls setup_rooks" do
-  #     expect(chess_board).to receive(:setup_rooks)
-  #   end
+    it "calls setup_rooks" do
+      expect(chess_board).to receive(:setup_rooks)
+    end
 
-  #   it "calls setup_royalty" do
-  #     expect(chess_board).to receive(:setup_royalty)
-  #   end
-  # end
+    it "calls setup_royalty" do
+      expect(chess_board).to receive(:setup_royalty)
+    end
+  end
 
   describe "#castle_available?" do
     it "returns false when the White short castle squares are under threat" do
