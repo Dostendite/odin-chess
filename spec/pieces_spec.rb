@@ -87,7 +87,7 @@ RSpec.describe Pawn do
       chess_board.board = chess_board.generate_board
     end
 
-    it "returns two squares ahead when the pawn hasn't moved" do
+    it "returns 2 squares ahead when the pawn hasn't moved" do
       # can't use a before block because the variables aren't
       # in scope, do more research
       pawn = Pawn.new("White", [1, 4])
@@ -96,7 +96,7 @@ RSpec.describe Pawn do
       expect(valid_squares.length).to be(2)
     end
 
-    it "returns one square ahead when the pawn has moved" do
+    it "returns 1 square ahead when the pawn has moved" do
       pawn = Pawn.new("White", [1, 4])
       pawn.instance_variable_set(:@moved, true)
 
@@ -105,7 +105,7 @@ RSpec.describe Pawn do
       expect(valid_squares.length).to be(1)
     end
 
-    it "returns no squares when a piece is one square ahead" do
+    it "returns no squares when a piece is 1 square ahead" do
       opposing_piece = Pawn.new("White", [5, 4])
       chess_board.add_piece(opposing_piece, opposing_piece.position)
 
@@ -115,7 +115,7 @@ RSpec.describe Pawn do
       expect(valid_squares).to be_empty
     end
 
-    it "returns one square ahead when a piece is two squares ahead" do
+    it "returns 1 square ahead when a piece is 2 squares ahead" do
       opposing_piece = Pawn.new("White", [4, 4])
       chess_board.add_piece(opposing_piece, opposing_piece.position)
 
@@ -125,7 +125,7 @@ RSpec.describe Pawn do
       expect(valid_squares.length).to be(1)
     end
 
-    it "returns a diagonal move when a piece is one diagonal square ahead" do
+    it "returns a diagonal move when a piece is 1 diagonal square ahead" do
       opposing_piece = Pawn.new("White", [5, 5])
       chess_board.add_piece(opposing_piece, opposing_piece.position)
 
@@ -136,7 +136,7 @@ RSpec.describe Pawn do
       expect(valid_squares.length).to be(3)
     end
 
-    it "returns two diagonal moves when two pieces are diagonal squares ahead" do
+    it "returns 2 diagonal moves when two pieces are diagonal squares ahead" do
       opposing_piece_left = Pawn.new("White", [5, 3])
       chess_board.add_piece(opposing_piece_left, opposing_piece_left.position)
 
@@ -187,7 +187,7 @@ RSpec.describe Bishop do
       expect(valid_squares.length).to be(10)
     end
 
-    it "returns no squares when diagonally surrounded on g7 by friendly pieces" do
+    it "returns no squares when diagonally surrounded on g7 by allied pieces" do
       pawn_one = Pawn.new("Black", [7, 5])
       chess_board.add_piece(pawn_one, pawn_one.position)
 
@@ -206,7 +206,7 @@ RSpec.describe Bishop do
       expect(valid_squares.length).to be(0)
     end
 
-    it "returns 7 squares when on c5 and in range of two enemy pieces" do
+    it "returns 7 squares when on c5 and in range of two opposing pieces" do
       pawn = Pawn.new("White", [5, 3])
       chess_board.add_piece(pawn, pawn.position)
   
@@ -244,9 +244,10 @@ RSpec.describe Knight do
       expect(valid_squares.length).to be(2)
     end
 
-    it "returns 6 squares when on d5 and with 2 friendly pawns" do
+    it "returns 6 squares when on d5 and with 2 allied pawns" do
       pawn_one = Pawn.new("Black", [6, 4])
       chess_board.add_piece(pawn_one, pawn_one.position)
+
       pawn_two = Pawn.new("Black", [5, 5])
       chess_board.add_piece(pawn_two, pawn_two.position)
 
@@ -256,7 +257,7 @@ RSpec.describe Knight do
       expect(valid_squares.length).to be(6)
     end
 
-    it "returns 8 squares when surrounded by enemy pieces" do
+    it "returns 8 squares when surrounded by opposing pieces" do
       pawn_one = Pawn.new("White", [6, 3])
       chess_board.add_piece(pawn_one, pawn_one.position)
       pawn_two = Pawn.new("White", [6, 5])
@@ -307,13 +308,35 @@ RSpec.describe Rook do
     end
 
     it "returns 9 squares when in front of an opposing pawn on g7" do
-      pawn = Pawn.new("White", [5, 6])
-      chess_board.add_piece(pawn, pawn.position)
+      pawn_one = Pawn.new("White", [6, 3])
+      chess_board.add_piece(pawn_one, pawn_one.position)
+
+      pawn_two = Pawn.new("White", [6, 5])
+      chess_board.add_piece(pawn_two, pawn_two.position)
+
+      pawn_three = Pawn.new("White", [5, 2])
+      chess_board.add_piece(pawn_three, pawn_three.position)
       
       rook = Rook.new("Black", [6, 6])
       valid_squares = rook.get_valid_squares(test_board)
 
-      # 8 valid move + 1 capture move
+      # 8 valid move + 1  
+      expect(valid_squares.length).to be(9)
+    end
+
+    it "returns 9 squares when on e8 and surrounded by three allied pawns" do
+      pawn_one = Pawn.new("Black", [7, 2])
+      chess_board.add_piece(pawn_one, pawn_one.position)
+
+      pawn_two = Pawn.new("Black", [6, 3])
+      chess_board.add_piece(pawn_two, pawn_two.position)
+      
+      pawn_three = Pawn.new("Black", [7, 6])
+      chess_board.add_piece(pawn_three, pawn_three.position)
+      
+      rook = Rook.new("Black", [7, 4])
+      valid_squares = rook.get_valid_squares(test_board)
+
       expect(valid_squares.length).to be(9)
     end
   end
@@ -345,10 +368,13 @@ RSpec.describe Queen do
   it "returns 16 squares when on d5 and blocked by three allied pawns" do
     pawn_one = Pawn.new("White", [5, 4])
     chess_board.add_piece(pawn_one, pawn_one.position)
+
     pawn_two = Pawn.new("White", [4, 4])
     chess_board.add_piece(pawn_two, pawn_two.position)
+
     pawn_three = Pawn.new("White", [3, 4])
     chess_board.add_piece(pawn_three, pawn_three.position)
+
 
     queen = Queen.new("White", [4, 3])
     valid_squares = queen.get_valid_squares(test_board)
@@ -376,7 +402,7 @@ RSpec.describe Queen do
     expect(valid_squares.length).to be(15)
   end
 
-  it "returns no moves when on h1 and surrounded by friendly pieces" do
+  it "returns no moves when on h1 and surrounded by allied pieces" do
     pawn = Pawn.new("White", [1, 7])
     chess_board.add_piece(pawn, pawn.position)
 
@@ -394,5 +420,55 @@ RSpec.describe Queen do
 end
 
 RSpec.describe King do
-  
+  let(:chess_board) { Board.new }
+  let(:test_board) { chess_board.board }
+
+  before do
+    chess_board.board = chess_board.generate_board
+  end
+
+  it "returns 8 moves when alone on e5" do
+    king = King.new("Black", [4, 4])
+    valid_squares = king.get_valid_squares(test_board)
+
+    expect(valid_squares.length).to be(8)
+  end
+
+  it "returns 5 moves when alone on a5" do
+    king = King.new("White", [4, 0])
+    valid_squares = king.get_valid_squares(test_board)
+
+    expect(valid_squares.length).to be(5)
+  end
+
+  it "returns 8 moves when on e6 and surrounded by three opposing pawns" do
+    pawn_one = Pawn.new("White", [4, 3])
+    chess_board.add_piece(pawn_one, pawn_one.position)
+
+    pawn_two = Pawn.new("White", [6, 3])
+    chess_board.add_piece(pawn_two, pawn_two.position)
+
+    pawn_three = Pawn.new("White", [4, 5])
+    chess_board.add_piece(pawn_three, pawn_three.position)
+
+
+    king = King.new("Black", [5, 4])
+    valid_squares = king.get_valid_squares(test_board)
+
+    expect(valid_squares.length).to be(8)
+  end
+
+  it "returns 1 move when on a1 and surrounded by two allied pawns" do
+    pawn_one = Pawn.new("White", [1, 0])
+    chess_board.add_piece(pawn_one, pawn_one.position)
+
+    pawn_two = Pawn.new("White", [1, 1])
+    chess_board.add_piece(pawn_two, pawn_two.position)
+
+
+    king = King.new("White", [0, 0])
+    valid_squares = king.get_valid_squares(test_board)
+
+    expect(valid_squares.length).to be(1)
+  end
 end
