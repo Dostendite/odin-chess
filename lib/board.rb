@@ -193,7 +193,7 @@ class Board
     available_squares
   end
 
-  def king_in_check?(king_color)
+  def king_under_attack?(king_color)
     opponent_color = king_color == "White" ? "Black" : "White"
     opponent_moves = find_all_move_squares(opponent_color)
 
@@ -217,7 +217,7 @@ class Board
 
     move_piece(piece, target_pair)
 
-    if king_in_check?(@current_turn)
+    if king_under_attack?(@current_turn)
       check_condition = true
     end
 
@@ -250,7 +250,7 @@ class Board
 
         move_piece(piece, target_pair)
 
-        if !king_in_check?(color)
+        if !king_under_attack?(color)
           available_pieces_and_moves << [piece, target_pair]
         end
 
@@ -281,7 +281,7 @@ class Board
   end
 
   def find_piece_class(piece_type)
-    @piece_types[piece_type.upcase]
+    @piece_types[piece_type[0].upcase]
   end
 
   # Optimize: All setup methods
@@ -336,12 +336,12 @@ class Board
   def setup_pieces
     setup_pawns("White")
     setup_pawns("Black")
-    setup_rooks("White")
-    setup_rooks("Black")
     setup_knights("White")
     setup_knights("Black")
     setup_bishops("White")
     setup_bishops("Black")
+    setup_rooks("White")
+    setup_rooks("Black")
     setup_royalty("White")
     setup_royalty("Black")
   end
