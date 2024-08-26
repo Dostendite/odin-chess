@@ -81,12 +81,11 @@ end
 RSpec.describe Pawn do
   describe "#get_valid_squares" do
     let(:chess_board) { Board.new }
+    let(:test_board) { chess_board.board }
 
     before do
       chess_board.board = chess_board.generate_board
     end
-
-    let(:test_board) { chess_board.board }
 
     it "returns two squares ahead when the pawn hasn't moved" do
       # can't use a before block because the variables aren't
@@ -156,12 +155,11 @@ end
 RSpec.describe Bishop do
   describe "#get_valid_squares" do
     let(:chess_board) { Board.new }
+    let(:test_board) { chess_board.board }
 
     before do
       chess_board.board = chess_board.generate_board
     end
-
-    let(:test_board) { chess_board.board }
 
     it "returns 13 squares when alone in e4" do
       bishop = Bishop.new("White", [3, 4])
@@ -226,12 +224,11 @@ end
 RSpec.describe Knight do
   describe "#get_valid_squares" do
     let(:chess_board) { Board.new }
+    let(:test_board) { chess_board.board }
 
     before do
       chess_board.board = chess_board.generate_board
     end
-
-    let(:test_board) { chess_board.board }
 
     it "returns 8 squares when on d3" do
       knight = Knight.new("Black", [4, 4])
@@ -247,7 +244,7 @@ RSpec.describe Knight do
       expect(valid_squares.length).to be(2)
     end
 
-    it "returns 6 squares when on d5 and with friendly pawns" do
+    it "returns 6 squares when on d5 and with 2 friendly pawns" do
       pawn_one = Pawn.new("Black", [6, 4])
       chess_board.add_piece(pawn_one, pawn_one.position)
       pawn_two = Pawn.new("Black", [5, 5])
@@ -259,7 +256,7 @@ RSpec.describe Knight do
       expect(valid_squares.length).to be(6)
     end
 
-    it "returns 8 squares when surrounded" do
+    it "returns 8 squares when surrounded by enemy pieces" do
       pawn_one = Pawn.new("White", [6, 3])
       chess_board.add_piece(pawn_one, pawn_one.position)
       pawn_two = Pawn.new("White", [6, 5])
@@ -331,7 +328,69 @@ RSpec.describe Queen do
 
   let(:test_board) { chess_board.board }
 
-  
+  it "returns 27 squares when alone on d5" do
+    queen = Queen.new("White", [4, 3])
+    valid_squares = queen.get_valid_squares(test_board)
+
+    expect(valid_squares.length).to be(27)
+  end
+
+  it "returns 21 squares when alone on a8" do
+    queen = Queen.new("White", [0, 7])
+    valid_squares = queen.get_valid_squares(test_board)
+
+    expect(valid_squares.length).to be(21)
+  end
+
+  it "returns 16 squares when on d5 and blocked by three allied pawns" do
+    pawn_one = Pawn.new("White", [5, 4])
+    chess_board.add_piece(pawn_one, pawn_one.position)
+    pawn_two = Pawn.new("White", [4, 4])
+    chess_board.add_piece(pawn_two, pawn_two.position)
+    pawn_three = Pawn.new("White", [3, 4])
+    chess_board.add_piece(pawn_three, pawn_three.position)
+
+    queen = Queen.new("White", [4, 3])
+    valid_squares = queen.get_valid_squares(test_board)
+
+    expect(valid_squares.length).to be(16)
+  end
+
+  it "returns 15 moves when on g3 and surrounded by four opposing pieces" do
+    pawn_one = Pawn.new("White", [2, 2])
+    chess_board.add_piece(pawn_one, pawn_one.position)
+
+    pawn_two = Pawn.new("White", [6, 6])
+    chess_board.add_piece(pawn_two, pawn_two.position)
+
+    rook_one = Rook.new("White", [3, 5])
+    chess_board.add_piece(rook_one, rook_one.position)
+
+    rook_two = Rook.new("White", [1, 5])
+    chess_board.add_piece(rook_two, rook_two.position)
+
+    queen = Queen.new("Black", [2, 6])
+    valid_squares = queen.get_valid_squares(test_board)
+
+    # 11 valid moves + 4 attacking moves
+    expect(valid_squares.length).to be(15)
+  end
+
+  it "returns no moves when on h1 and surrounded by friendly pieces" do
+    pawn = Pawn.new("White", [1, 7])
+    chess_board.add_piece(pawn, pawn.position)
+
+    bishop = Bishop.new("White", [1, 6])
+    chess_board.add_piece(bishop, bishop.position)
+
+    rook = Bishop.new("White", [0, 6])
+    chess_board.add_piece(rook, rook.position)
+
+    queen = Queen.new("White", [0, 7])
+    valid_squares = queen.get_valid_squares(test_board)
+
+    expect(valid_squares).to be_empty
+  end
 end
 
 RSpec.describe King do
