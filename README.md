@@ -12,7 +12,7 @@ find any bugs or possible improvements.
 The game is equipped with tests for game rules,
 possible moves, predicate methods, and more.
 
-![command line chess game screenshot](https://imgur.com/a/ZAyM4NC)
+![command line chess game screenshot](https://i.imgur.com/ZrWICEL.png)
 
 ## Possible features to add
 
