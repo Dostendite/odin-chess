@@ -94,16 +94,15 @@ class Chess
     display_final_message
   end
 
+  # should chop this up into more methods
   def check_for_promotion(piece)
     return if !piece.instance_of?(Pawn)
 
-    # binding.pry
     last_row = @chess_board.current_turn == "White" ? 7 : 0
 
     if piece.position[0] == last_row
       promotion_choice = receive_promotion_prompt
       piece_types = @chess_board.piece_types
-
       piece_class = piece_types[promotion_choice[0].upcase]
       @chess_board.promote_pawn(piece, piece_class)
     end
@@ -111,7 +110,7 @@ class Chess
 
   def mark_check
     opponent_color = @chess_board.current_turn == "White" ? "Black" : "White"
-    if @chess_board.king_in_check?(opponent_color)
+    if @chess_board.king_under_attack?(opponent_color)
       @chess_board.give_check(opponent_color)
     else
       @chess_board.take_check(opponent_color)
@@ -238,7 +237,7 @@ class Chess
   def checkmate?
     # king has moves
     opponent_color = @chess_board.current_turn == "White" ? "Black" : "White"
-    if @chess_board.king_in_check?(opponent_color)
+    if @chess_board.king_under_attack?(opponent_color)
       check_dodges = @chess_board.find_available_check_dodges(opponent_color)
       if check_dodges.flatten.empty?
         @final_message = "checkmate"
@@ -252,7 +251,7 @@ class Chess
     opponent_color = @chess_board.current_turn == "White" ? "Black" : "White"
     # if the oppposing king is not in check but they
     # have no moves, it's a stalemate
-    if !@chess_board.king_in_check?(opponent_color)
+    if !@chess_board.king_under_attack?(opponent_color)
       check_dodges = @chess_board.find_available_check_dodges(opponent_color)
       if check_dodges.flatten.empty?
         @final_message = "stalemate"
@@ -315,7 +314,7 @@ class Chess
   end
 
   def validate_move(move)
-    return nil if (move.length < 1 || move.length > 3)
+    return nil if (move.length < 2 || move.length > 3)
 
     if move.length == 3
       piece_type = @chess_board.find_piece_class(move[0].upcase)
@@ -351,8 +350,9 @@ class Chess
     display_promotion_prompt
     loop do
       choice = gets.chomp
+      return "n" if choice.downcase == "knight"
 
-      if !%w(queen rook bishop knight).include?(choice.downcase)
+      if !%w(queen rook bishop).include?(choice.downcase)
         puts "Please enter one of the pieces above!"
       else
         return choice
