@@ -1,15 +1,17 @@
 ## Ruby Chess for TOP
 Capstone Ruby Project
 
-📎 [**Eraser.io Diagram**](https://app.eraser.io/workspace/eYiXDPKXy40Zk8JtDkIm?origin=share)
+Welcome to my CLI game of Chess!
 
-### Pending
-- Game implementation
-- Test implementation
-- Screenshots *(Start, mid-game)*
-- Notes & Possible improvements
+I made it all by myself :D, let me know if you
+find any bugs or possible improvements.
 
-## Bonus points
+The game is equipped with tests for game rules,
+possible moves, predicate methods, and more.
+
+![command line chess game screenshot]https://imgur.com/a/ZAyM4NC
+
+## Possible features to add
 
 ### Stockfish
 Plug stockfish or some other AI into the game and let the player choose a difficulty mode before playing
