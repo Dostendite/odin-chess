@@ -127,17 +127,15 @@ class Chess
     if move.downcase.include?("kg") && move.length == 3
       if @chess_board.castle_available?(current_turn, "short")
         @chess_board.castle_short(current_turn)
-      else
-        return nil
+        return "castle"
       end
     elsif move.downcase.include?("kc") && move.length == 3
       if @chess_board.castle_available?(current_turn, "long")
         @chess_board.castle_long(current_turn)
-      else
-        return nil
+        return "castle"
       end
     end
-    "castle"
+    nil
   end
   
   def mark_piece_as_moved(piece)
@@ -235,7 +233,6 @@ class Chess
   end
 
   def checkmate?
-    # king has moves
     opponent_color = @chess_board.current_turn == "White" ? "Black" : "White"
     if @chess_board.king_under_attack?(opponent_color)
       check_dodges = @chess_board.find_available_check_dodges(opponent_color)
