@@ -1,16 +1,14 @@
 ## Ruby Chess for TOP
-Capstone Ruby Project
 
-Welcome to my CLI game of Chess!
+Welcome to my CLI game of Chess! The capstone project for the Ruby course.
 
 I recommend you increase your **terminal font size** to play
 the game comfortably, as it uses small unicode symbols.
 
-I made it all by myself :D, let me know if you
-find any bugs or possible improvements.
-
 The game is equipped with tests for game rules,
 possible moves, predicate methods, and more.
+
+Please let me know if you find any bugs or possible improvements!
 
 ![command line chess game screenshot](https://i.imgur.com/ZrWICEL.png)
 
