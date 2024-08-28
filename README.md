@@ -2,8 +2,9 @@
 
 Welcome to my CLI game of Chess! The capstone project for the Ruby course.
 
-I recommend you increase your **terminal font size** to play
-the game comfortably, as it uses small unicode symbols.
+> [!NOTE]
+> I recommend you increase your **terminal font size** to play
+> the game comfortably, as it uses small unicode symbols.
 
 The game is equipped with tests for game rules,
 possible moves, predicate methods, and more.
