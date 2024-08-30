@@ -265,7 +265,7 @@ class Chess
 
   def load_board(save_number)
     @chess_board = load_save(save_number)
-    @chess_board.save_number = Serializer.get_save_amount
+    # @chess_board.save_number = Serializer.get_save_amount
   end
 
   def save_board
