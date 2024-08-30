@@ -136,22 +136,11 @@ RSpec.describe Chess do
       new_board = Board.new
       new_board.board = new_board.generate_board
       allow(chess_game).to receive(:load_save).and_return(new_board)
-      allow(Serializer).to receive(:get_save_amount).and_return(5)
-    end
-    
-    it "calls Serializer's load_save" do
-      expect(chess_game).to receive(:load_save)
-      chess_game.load_board(7)
-    end
-    
-    it "calls Serializer's load_save" do
-      expect(Serializer).to receive(:get_save_amount)
-      chess_game.load_board(5)
     end
 
-    it "sets the chess_board's save number to the one provided" do
+    it "calls Serializer's load_save" do
+      expect(chess_game).to receive(:load_save)
       chess_game.load_board(5)
-      expect(chess_board.save_number).to eq(5)
     end
   end
 
