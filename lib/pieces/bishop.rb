@@ -9,6 +9,6 @@ class Bishop < Piece
   def initialize(color, position)
     super(color, position)
     @symbol = "♝♗"
-    @axes = { x: 0, y: 0, d: 7}
+    @axes = { x: 0, y: 0, d: 7 }
   end
 end
