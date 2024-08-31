@@ -49,7 +49,7 @@ class Pawn < Piece
 
     diagonal_left_square = board[row + delta][column - 1]
     diagonal_right_square = board[row + delta][column + 1]
-    
+
     if !diagonal_left_square.nil?
       if diagonal_left_square.opposing?(@color)
         attacking_moves << diagonal_left_square

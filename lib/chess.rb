@@ -1,5 +1,3 @@
-require "pry-byebug"
-
 require_relative "board"
 require_relative "chess"
 require_relative "square"
@@ -74,7 +72,7 @@ class Chess
           board_message = "causes check"
           next
         end
-        
+
         @chess_board.remove_en_passant
         mark_piece_as_moved(piece)
         make_move(piece, move_pair)

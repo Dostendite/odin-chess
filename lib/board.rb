@@ -1,5 +1,3 @@
-require "pry-byebug"
-
 require_relative "square"
 require_relative "serializer"
 require_relative "move_validator"
@@ -262,7 +260,7 @@ class Board
       end
     end
     available_pieces_and_moves
-  end 
+  end
 
   def find_all_pieces(color = nil)
     pieces = []

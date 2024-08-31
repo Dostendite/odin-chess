@@ -28,17 +28,17 @@ class Piece
   # but both work if they're negative
   def get_valid_squares(board)
     valid_squares = []
-    
+
     unless @axes[:x].nil?
       valid_squares += calculate_squares(board, @axes[:x], 0)
       valid_squares += calculate_squares(board, -@axes[:x], 0)
     end
-  
+
     unless @axes[:y].nil?
       valid_squares += calculate_squares(board, 0, @axes[:y])
       valid_squares += calculate_squares(board, 0, -@axes[:y])
     end
-  
+
     unless @axes[:d].nil?
       valid_squares += calculate_squares(board, @axes[:d], @axes[:d])
       valid_squares += calculate_squares(board, @axes[:d], -@axes[:d])

@@ -1,5 +1,3 @@
-require "pry-byebug"
-
 require_relative "../lib/board"
 require_relative "../lib/move_validator"
 

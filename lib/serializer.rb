@@ -1,5 +1,3 @@
-require "pry-byebug"
-
 SAVE_NAME = "chess_save_"
 SAVE_DIRECTORY = "./saves/"
 
@@ -60,7 +58,7 @@ module Serializer
       return (@@save_numbers[idx] + 1)
     end
   end
-  
+
   def delete_save(save_number)
     File.delete(get_existing_save_path(save_number))
   end
