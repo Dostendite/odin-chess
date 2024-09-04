@@ -1,13 +1,5 @@
 require_relative "../lib/board"
 
-require_relative "../lib/pieces/piece.rb"
-require_relative "../lib/pieces/pawn.rb"
-require_relative "../lib/pieces/knight.rb"
-require_relative "../lib/pieces/bishop.rb"
-require_relative "../lib/pieces/rook.rb"
-require_relative "../lib/pieces/queen.rb"
-require_relative "../lib/pieces/king.rb"
-
 RSpec.describe Board do
   let(:chess_board) { described_class.new }
   let(:test_board) { chess_board.board }
