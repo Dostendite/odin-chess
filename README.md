@@ -7,6 +7,14 @@
 > [!WARNING]  
 > There's a bug with the "en passant" mechanic that came up recently which I need to fix
 
+**To-do for the fix:**
+- Add tests for en passant
+*Check that the pawn has the available move,
+and that the captured piece exists **and** gets captured*
+- Remove the Move Validator Module and move its methods to the Board Class
+- Replace `if x.nil?` with `if x"`
+- Run Rubocop
+
 **Welcome to my CLI game of Chess! The capstone project for the Ruby course.**
 
 The game is equipped with tests for game rules,
