@@ -6,8 +6,8 @@
 
 **Possible improvements:**
 - Add tests for en passant
-*Check that the pawn has the available move,
-and that the captured piece exists **and** gets captured*
+*(Check that the pawn has the available move,
+and that the captured piece exists **and** gets captured)*
 - Remove the Move Validator Module and move its methods to the Board Class
 - Replace `if x.nil?` with `if x"`
 - Run Rubocop
