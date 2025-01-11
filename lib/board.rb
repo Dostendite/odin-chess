@@ -132,10 +132,8 @@ class Board
       else
         @board[target_row - 1][target_column].en_passant_white = true
       end
-    end
-
-    # removes en passant victim
-    if piece.color == "Black"
+      # removes en passant victim
+    elsif piece.color == "Black"
       if @board[target_row][target_column].en_passant_white == true 
         @board[target_row + 1][target_column].piece = nil
       end
@@ -234,6 +232,8 @@ class Board
     available_pieces_and_moves = []
     available_pieces = find_all_pieces(color)
 
+    board_copy = Marshal.dump(@board)
+
     available_pieces.each do |piece|
       available_squares = piece.get_valid_squares(@board)
 
@@ -252,11 +252,7 @@ class Board
           available_pieces_and_moves << [piece, target_pair]
         end
 
-        # undo move
-        move_piece(piece, original_piece_pos)
-        if !square_piece.nil?
-          add_piece(square_piece, square_piece.position)
-        end
+        @board = Marshal.load(board_copy)
       end
     end
     available_pieces_and_moves

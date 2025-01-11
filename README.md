@@ -4,10 +4,7 @@
 > I recommend you increase your **terminal font size** to play
 > the game comfortably, as it uses small unicode symbols.
 
-> [!WARNING]  
-> There's a bug with the "en passant" mechanic that came up recently which I need to fix
-
-**To-do for the fix:**
+**Possible improvements:**
 - Add tests for en passant
 *Check that the pawn has the available move,
 and that the captured piece exists **and** gets captured*
