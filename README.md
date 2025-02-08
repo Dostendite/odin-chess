@@ -17,11 +17,11 @@ and that the captured piece exists **and** gets captured)*
 The game is equipped with tests for game rules,
 possible moves, predicate methods, and more.
 
-Please let me know if you find any bugs or possible improvements!
+Please let me know if you find any bugs or things to improve!
 
-![command line chess game screenshot](https://i.imgur.com/ZrWICEL.png)
+![CLI chess game screenshot](https://i.imgur.com/ZrWICEL.png)
 
-## Possible features to add
+## Cool feature ideas
 
 ### Stockfish
 Plug stockfish or some other AI into the game and let the player choose a difficulty mode before playing
